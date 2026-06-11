@@ -5,7 +5,7 @@ import VideoInfo from "../../components/VideoInfo.astro";
 import RelatedVideos from "../../components/RelatedVideos.astro";
 import Comments from "../../components/Comments.astro";
 import { db } from "../../db/client";
-import { courses } from "../../db/schema";
+import { courses, comments } from "../../db/schema";
 import { eq, ne, and, desc, isNotNull } from "drizzle-orm";
 
 export const prerender = false;
@@ -58,6 +58,12 @@ const continueLearning = db.select().from(courses)
   .limit(12)
   .all();
 
+// Fetch comments for this video
+const courseComments = db.select()
+  .from(comments)
+  .where(eq(comments.youtubeId, id))
+  .all();
+
 // View count display
 const viewCount = course.viewCount ?? 0;
 const description = `Learn ${course.title} with this comprehensive course by ${course.channel}. Master the fundamentals and best practices through hands-on exercises and real-world projects.`;
@@ -100,7 +106,7 @@ const ogImage = course.thumbnailUrl || `https://img.youtube.com/vi/${id}/maxresd
           category={course.category ?? undefined}
           createdAt={course.createdAt ?? undefined}
         />
-        <Comments />
+        <Comments comments={courseComments} />
       </div>
 
       <!-- Right Column — Sidebar -->

@@ -34,9 +34,22 @@ export const courses = sqliteTable('courses', {
   createdAt: text('created_at').default(new Date().toISOString()),
 });
 
+export const comments = sqliteTable('comments', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  youtubeId: text('youtube_id').notNull(),
+  author: text('author').notNull(),
+  avatarLetter: text('avatar_letter').notNull(),
+  text: text('text').notNull(),
+  likes: integer('likes').default(0),
+  replies: integer('replies').default(0),
+  createdAt: text('created_at').default(new Date().toISOString()),
+});
+
 export type Channel = typeof channels.$inferSelect;
 export type NewChannel = typeof channels.$inferInsert;
 export type Course = typeof courses.$inferSelect;
 export type NewCourse = typeof courses.$inferInsert;
 export type Playlist = typeof playlists.$inferSelect;
 export type NewPlaylist = typeof playlists.$inferInsert;
+export type Comment = typeof comments.$inferSelect;
+export type NewComment = typeof comments.$inferInsert;

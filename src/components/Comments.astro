@@ -1,39 +1,20 @@
 ---
-// Mock comments — coding-relevant, contextually appropriate
-const comments = [
-  {
-    user: "NetChuckFan",
-    avatar: "N",
-    time: "2 weeks ago",
-    text: "This helped me finally understand subnetting! The way you explained CIDR notation clicked for me. Passed my CCNA thanks to this series.",
-    likes: 47,
-    replies: 3,
-  },
-  {
-    user: "CodeNewbie42",
-    avatar: "C",
-    time: "5 days ago",
-    text: "For anyone confused about the hands-on part, make sure you have GNS3 or Packet Tracer installed before following along. Saved me a lot of back-and-forth.",
-    likes: 23,
-    replies: 1,
-  },
-  {
-    user: "LinuxPenguin",
-    avatar: "L",
-    time: "1 month ago",
-    text: "Great pacing. Not too fast, not too slow. Subscribed for more content like this.",
-    likes: 12,
-    replies: 0,
-  },
-  {
-    user: "DevOpsDan",
-    avatar: "D",
-    time: "3 days ago",
-    text: "Can you do a follow-up on Docker networking? This playlist got me interested in how containers talk to each other.",
-    likes: 8,
-    replies: 2,
-  },
-];
+// Comments section — accepts real data from DB, paginated 5 at a time
+export interface Props {
+  comments: {
+    author: string;
+    avatarLetter: string;
+    text: string;
+    likes: number;
+    replies: number;
+    createdAt: string;
+  }[];
+}
+
+const { comments: allComments } = Astro.props;
+const totalCount = allComments.length;
+const initialCount = Math.min(5, totalCount);
+const hiddenCount = totalCount - initialCount;
 ---
 
 <div class="border-t border-bg-border pt-4">
@@ -41,27 +22,27 @@ const comments = [
   <div class="flex items-center justify-between mb-4">
     <h3 class="text-sm font-bold text-text-primary">
       Comments &nbsp;
-      <span class="text-text-muted font-normal">{comments.length}</span>
+      <span class="text-text-muted font-normal">{totalCount}</span>
     </h3>
     <p class="text-xs text-text-muted">
       <a href="#" class="text-accent-primary hover:underline">Sign in</a> to comment
     </p>
   </div>
 
-  <!-- Comment list -->
-  <div class="space-y-4">
-    {comments.map((comment) => (
+  <!-- Comment list — initially shows 5 -->
+  <div class="comment-list space-y-4">
+    {allComments.slice(0, initialCount).map((comment) => (
       <div class="flex gap-3 group">
         <!-- Avatar -->
         <div class="w-8 h-8 rounded-full bg-bg-surface-3 flex items-center justify-center text-xs font-bold text-text-secondary flex-shrink-0">
-          {comment.avatar}
+          {comment.avatarLetter}
         </div>
 
         <!-- Content -->
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-0.5">
-            <span class="text-xs font-bold text-text-primary">{comment.user}</span>
-            <span class="text-[10px] text-text-dim">{comment.time}</span>
+            <span class="text-xs font-bold text-text-primary">{comment.author}</span>
+            <span class="text-[10px] text-text-dim">{comment.createdAt}</span>
           </div>
           <p class="text-xs text-text-secondary leading-relaxed mb-1.5">
             {comment.text}
@@ -82,8 +63,62 @@ const comments = [
     ))}
   </div>
 
-  <!-- Load more -->
-  <button class="w-full mt-4 py-2 text-xs font-bold text-text-secondary bg-bg-surface-1 rounded hover:bg-bg-surface-2 transition-colors duration-200">
-    Show more comments
-  </button>
+  <!-- Hidden comments (for JS toggle) -->
+  {hiddenCount > 0 && (
+    <>
+      <div class="comment-hidden space-y-4 hidden">
+        {allComments.slice(initialCount).map((comment) => (
+          <div class="flex gap-3 group">
+            <!-- Avatar -->
+            <div class="w-8 h-8 rounded-full bg-bg-surface-3 flex items-center justify-center text-xs font-bold text-text-secondary flex-shrink-0">
+              {comment.avatarLetter}
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="text-xs font-bold text-text-primary">{comment.author}</span>
+                <span class="text-[10px] text-text-dim">{comment.createdAt}</span>
+              </div>
+              <p class="text-xs text-text-secondary leading-relaxed mb-1.5">
+                {comment.text}
+              </p>
+              <div class="flex items-center gap-3 text-[10px] text-text-dim">
+                <button class="flex items-center gap-1 hover:text-accent-primary transition-colors duration-200">
+                  <span>&#9650;</span> {comment.likes}
+                </button>
+                <button class="flex items-center gap-1 hover:text-accent-primary transition-colors duration-200">
+                  <span>&#9660;</span>
+                </button>
+                {comment.replies > 0 && (
+                  <span class="text-text-muted">{comment.replies} {comment.replies === 1 ? 'reply' : 'replies'}</span>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <!-- Load more button -->
+      <button
+        class="comment-toggle w-full mt-4 py-2 text-xs font-bold text-text-secondary bg-bg-surface-1 rounded hover:bg-bg-surface-2 transition-colors duration-200"
+        data-hidden="{hiddenCount}"
+      >
+        Show {hiddenCount} more {hiddenCount === 1 ? 'comment' : 'comments'}
+      </button>
+    </>
+  )}
 </div>
+
+<script is:inline>
+  document.querySelectorAll('.comment-toggle').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var hidden = this.parentElement.querySelector('.comment-hidden');
+      if (hidden) {
+        hidden.classList.remove('hidden');
+        this.textContent = 'Show less';
+        this.classList.add('hidden');
+      }
+    });
+  });
+</script>

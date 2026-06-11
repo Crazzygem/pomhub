@@ -51,6 +51,17 @@ sqlite.exec(`
     featured INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    youtube_id TEXT NOT NULL,
+    author TEXT NOT NULL,
+    avatar_letter TEXT NOT NULL,
+    text TEXT NOT NULL,
+    likes INTEGER DEFAULT 0,
+    replies INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 // Read channels config
@@ -117,9 +128,37 @@ for (const ch of channels) {
   }
 }
 
+// Check if courses exist and seed comments if available
+const courseCount = sqlite.prepare("SELECT COUNT(*) as c FROM courses").get() as { c: number };
+if (courseCount.c > 0) {
+  // Seed comments inline
+  const { ALL_COMMENTS } = await import("../lib/comments.js");
+  const courseRows = sqlite.prepare("SELECT youtube_id FROM courses").all() as { youtube_id: string }[];
+  const insertComment = sqlite.prepare(
+    "INSERT INTO comments (youtube_id, author, avatar_letter, text, likes, replies, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+  );
+
+  let commentCount = 0;
+  const insertMany = sqlite.transaction(() => {
+    for (const comment of ALL_COMMENTS) {
+      const course = courseRows[Math.floor(Math.random() * courseRows.length)];
+      insertComment.run(course.youtube_id, comment.author, comment.avatarLetter, comment.text, comment.likes, comment.replies, comment.createdAt);
+      commentCount++;
+    }
+  });
+  insertMany();
+  console.log(`  💬 Seeded ${commentCount} comments`);
+}
+
+const finalCourseCount = (sqlite.prepare("SELECT COUNT(*) as c FROM courses").get() as { c: number }).c;
 sqlite.close();
 
 console.log(`\n${"=".repeat(60)}`);
-console.log(`✅ Seeded ${channels.length} channels, ${totalPlaylists} playlists`);
-console.log(`   Run \`npm run sync\` to fetch video metadata`);
+console.log(`✅ Seeded ${channels.length} channels, ${totalPlaylists} playlists, ${finalCourseCount} courses`);
+if (finalCourseCount === 0) {
+  console.log(`   💬 Run \`npm run sync\` first, then run this script again to seed comments`);
+} else {
+  console.log(`   💬 Comments seeded`);
+}
+console.log(`   Then run \`npm run sync\` to fetch/update video metadata`);
 console.log(`${"=".repeat(60)}\n`);
