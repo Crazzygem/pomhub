@@ -1,0 +1,48 @@
+---
+export interface Props {
+  youtubeId: string;
+}
+
+const { youtubeId } = Astro.props;
+const embedUrl = `https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`;
+---
+
+<div class="relative w-full aspect-video bg-bg-surface-1 rounded overflow-hidden mb-3 group">
+  <!-- Lazy-loaded iframe — click to play -->
+  <div
+    class="video-placeholder w-full h-full flex items-center justify-center cursor-pointer"
+    data-youtube-id={youtubeId}
+  >
+    <img
+      src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
+      alt="Video thumbnail"
+      class="w-full h-full object-cover transition-all duration-300 group-hover:brightness-75"
+      loading="lazy"
+    />
+    <!-- Play button overlay -->
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div class="w-16 h-16 rounded-full bg-accent-primary/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-accent-primary animate-glow-pulse">
+        <span class="text-accent-cta-text text-2xl ml-0.5">&#9654;</span>
+      </div>
+    </div>
+    <!-- HD badge -->
+    <span class="absolute top-2 right-2 text-[10px] font-bold text-accent-primary bg-black/80 px-1.5 py-0.5 rounded">HD</span>
+  </div>
+</div>
+
+<script is:inline>
+  // Click to load iframe
+  document.querySelectorAll('.video-placeholder').forEach(el => {
+    el.addEventListener('click', function() {
+      var youtubeId = this.getAttribute('data-youtube-id');
+      var embedUrl = 'https://www.youtube.com/embed/' + youtubeId + '?autoplay=1&rel=0&modestbranding=1';
+      var iframe = document.createElement('iframe');
+      iframe.src = embedUrl;
+      iframe.className = 'w-full h-full';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.allowFullscreen = true;
+      this.innerHTML = '';
+      this.appendChild(iframe);
+    });
+  });
+</script>

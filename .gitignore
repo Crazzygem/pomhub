@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.astro/
+
+# Database
+*.db
+
+# Data directory (Docker volume)
+data/
+
+# Python virtual environment
+.venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.*

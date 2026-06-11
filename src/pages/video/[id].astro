@@ -1,0 +1,145 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import VideoPlayer from "../../components/VideoPlayer.astro";
+import VideoInfo from "../../components/VideoInfo.astro";
+import RelatedVideos from "../../components/RelatedVideos.astro";
+import Comments from "../../components/Comments.astro";
+import { db } from "../../db/client";
+import { courses } from "../../db/schema";
+import { eq, ne, and, desc, isNotNull } from "drizzle-orm";
+
+export const prerender = false;
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect("/");
+}
+
+const course = db.select().from(courses).where(eq(courses.youtubeId, id)).get();
+
+if (!course) {
+  return Astro.redirect("/");
+}
+
+// Fetch related videos (same category, excluding current)
+const relatedVideos = course.category
+  ? db.select().from(courses)
+      .where(and(eq(courses.category, course.category), ne(courses.youtubeId, id)))
+      .limit(10)
+      .all()
+  : [];
+
+// Fetch other courses for sidebar — prefer synced courses, newest first
+const otherCourses = db.select().from(courses)
+  .where(and(
+    ne(courses.youtubeId, id),
+    isNotNull(courses.thumbnailUrl),
+  ))
+  .orderBy(desc(courses.id))
+  .limit(10)
+  .all();
+
+// Combine: related first, then fill with others (deduplicate)
+const sidebarVideos = [...relatedVideos];
+for (const c of otherCourses) {
+  if (!sidebarVideos.find(v => v.youtubeId === c.youtubeId)) {
+    sidebarVideos.push(c);
+  }
+}
+const upNext = sidebarVideos.slice(0, 5);
+const moreCourses = sidebarVideos.slice(5, 10);
+
+// Below-fold grid: all remaining unique videos
+const gridVideos = [...relatedVideos, ...otherCourses]
+  .filter((v, i, arr) => arr.findIndex(x => x.youtubeId === v.youtubeId) === i)
+  .filter(v => v.youtubeId !== id)
+  .slice(0, 12);
+
+// View count display
+const viewCount = course.viewCount ?? 0;
+const description = `Learn ${course.title} with this comprehensive course by ${course.channel}. Master the fundamentals and best practices through hands-on exercises and real-world projects.`;
+
+// OG image
+const ogImage = course.thumbnailUrl || `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+---
+
+<Layout
+  title={`${course.title} | PomHub Dev`}
+  description={description}
+  ogImage={ogImage}
+>
+  <main class="max-w-[1280px] mx-auto px-5 py-4">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-1.5 text-xs mb-4 flex-wrap">
+      <a href="/" class="text-text-muted hover:text-accent-primary transition-colors duration-200">Home</a>
+      <span class="text-text-dim">&rsaquo;</span>
+      {course.category && (
+        <>
+          <span class="text-accent-primary font-bold">{course.category}</span>
+          <span class="text-text-dim">&rsaquo;</span>
+        </>
+      )}
+      <span class="text-text-secondary line-clamp-1">{course.title}</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5">
+
+      <!-- Left Column — Video + Info + Comments -->
+      <div class="min-w-0">
+        <VideoPlayer youtubeId={course.youtubeId} />
+        <VideoInfo
+          title={course.title}
+          channel={course.channel ?? ""}
+          duration={course.duration ?? ""}
+          viewCount={viewCount}
+          description={description}
+          category={course.category ?? undefined}
+          createdAt={course.createdAt ?? undefined}
+        />
+        <Comments />
+      </div>
+
+      <!-- Right Column — Sidebar -->
+      <aside class="min-w-0">
+        <RelatedVideos videos={upNext} courses={moreCourses} />
+      </aside>
+
+    </div>
+
+    <!-- Below-fold: Videos You May Like -->
+    {gridVideos.length > 0 && (
+      <section class="mt-8 border-t border-bg-border pt-6">
+        <h2 class="text-sm font-bold text-text-primary mb-4 uppercase tracking-wide">
+          Videos You May Like
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          {gridVideos.map((video) => (
+            <a
+              href={`/video/${video.youtubeId}`}
+              class="group block"
+            >
+              <div class="relative aspect-video rounded overflow-hidden bg-bg-surface-1 mb-1.5">
+                <img
+                  src={video.thumbnailUrl || `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
+                  alt={video.title}
+                  class="w-full h-full object-cover transition-all duration-300 group-hover:brightness-75 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <span class="absolute bottom-0.5 right-0.5 text-[10px] text-text-primary bg-black/75 px-1 py-0.5 rounded">
+                  {video.duration}
+                </span>
+              </div>
+              <p class="text-xs text-text-secondary leading-tight line-clamp-2 group-hover:text-text-primary transition-colors duration-200">
+                {video.title}
+              </p>
+              <p class="text-[10px] text-text-muted mt-0.5">{video.channel}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+  </main>
+</Layout>

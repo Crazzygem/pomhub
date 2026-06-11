@@ -1,0 +1,66 @@
+---
+// Main Header — logo, orientation tabs, nav, search, auth
+const orientations = ["Web Dev", "Data Science", "Python", "UI/UX"];
+const navItems = ["Home", "Courses", "Paths", "Pricing", "Blog"];
+---
+
+<header class="flex flex-wrap items-center px-5 py-2 border-b border-bg-border gap-x-4 gap-y-2">
+  <!-- Logo -->
+  <a href="/" class="text-lg font-bold text-text-primary whitespace-nowrap">
+    PomHub<span class="text-accent-primary">Dev</span>
+  </a>
+
+  <!-- Orientation tabs (hidden on mobile) -->
+  <div class="hidden md:flex gap-1">
+    {orientations.map((tab, i) => (
+      <a
+        href="#"
+        class="text-xs font-bold text-text-secondary hover:text-text-primary transition-colors duration-200 px-3 py-1 rounded"
+      >
+        {tab}
+      </a>
+    ))}
+  </div>
+
+  <!-- Main nav (hidden on mobile, visible md+) -->
+  <nav class="hidden md:flex gap-0.5 w-auto">
+    {navItems.map((item) => (
+      <a
+        href="#"
+        class="text-xs font-bold text-text-secondary hover:text-accent-hover uppercase px-2.5 py-1 transition-colors duration-200"
+      >
+        {item}
+      </a>
+    ))}
+  </nav>
+
+  <!-- Mobile hamburger (visible only on mobile) -->
+  <button class="md:hidden flex items-center justify-center w-8 h-8 text-text-secondary hover:text-text-primary transition-colors duration-200 ml-auto" aria-label="Menu">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+    </svg>
+  </button>
+
+  <!-- Header actions (hidden on mobile, visible md+) -->
+  <div class="hidden md:flex items-center gap-2 ml-auto flex-wrap">
+    <!-- Search -->
+    <div class="flex items-center">
+      <input
+        type="search"
+        placeholder="Search courses..."
+        class="bg-bg-surface-3 text-text-primary text-sm h-[37px] px-3 border-none rounded-r-[20px] outline-none w-[180px] md:w-[220px] placeholder:text-text-dim transition-all duration-300 focus:w-[240px] md:focus:w-[280px]"
+      />
+    </div>
+
+    <a href="#" class="text-xs text-text-primary px-2 whitespace-nowrap hover:text-accent-hover transition-colors duration-200">
+      Log In
+    </a>
+
+    <a
+      href="#"
+      class="inline-flex items-center text-xs font-bold text-accent-cta-text bg-accent-cta px-3.5 py-1.5 border-2 border-accent-cta-text rounded-[20px] h-[38px] whitespace-nowrap hover:bg-accent-primary transition-all duration-300 hover:scale-105 active:scale-95"
+    >
+      Start Free
+    </a>
+  </div>
+</header>

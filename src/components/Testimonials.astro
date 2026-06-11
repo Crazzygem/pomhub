@@ -1,0 +1,43 @@
+---
+// Testimonials
+import TestimonialCard from "./TestimonialCard.astro";
+
+const testimonials = [
+  {
+    quote: "This bootcamp changed my career. I went from zero coding experience to landing my first developer job in 4 months. The mentorship is incredible.",
+    author: "Alex R.",
+    role: "Data Science Graduate",
+    stars: 5,
+  },
+  {
+    quote: "The project-based learning helped me build a real portfolio that got me hired. I had three job offers within a month of graduating.",
+    author: "Sarah M.",
+    role: "Full-Stack Graduate",
+    stars: 5,
+  },
+  {
+    quote: "I tried self-learning for a year with no structure. PomHub Dev gave me a clear path, weekly deadlines, and direct access to instructors.",
+    author: "James K.",
+    role: "Web Dev Graduate",
+    stars: 4,
+  },
+  {
+    quote: "The React and Node.js modules were hands-down the best online curriculum I've ever seen. Built 4 production-ready apps during the course.",
+    author: "Priya N.",
+    role: "Full-Stack Graduate",
+    stars: 5,
+  },
+];
+---
+
+<section>
+  <h2 class="text-base font-bold text-text-primary capitalize mb-3 pb-2 border-b border-bg-border">
+    What Our Students Say
+  </h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    {testimonials.map((t, i) => (
+      <TestimonialCard {...t} delay={i * 120} />
+    ))}
+  </div>
+</section>

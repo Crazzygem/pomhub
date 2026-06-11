@@ -1,0 +1,32 @@
+---
+// Course Grid — Popular Courses section with pagination
+import CourseCard from "./CourseCard.astro";
+import Pagination from "./Pagination.astro";
+
+export interface Props {
+  courses: {
+    youtubeId: string;
+    title: string;
+    channel: string;
+    duration: string;
+    category?: string | null;
+    thumbnailUrl?: string | null;
+  }[];
+}
+
+const { courses } = Astro.props;
+---
+
+<section>
+  <h2 class="text-base font-bold text-text-primary capitalize mb-3 pb-2 border-b border-bg-border">
+    Popular Courses
+  </h2>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-2.5 gap-x-0">
+    {courses.map((course, i) => (
+      <CourseCard {...course} delay={i * 80} />
+    ))}
+  </div>
+
+  <Pagination />
+</section>

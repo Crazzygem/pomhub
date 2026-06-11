@@ -1,0 +1,26 @@
+---
+export interface Props {
+  description: string;
+  modules?: string[];
+}
+
+const { description, modules = [] } = Astro.props;
+---
+
+<div class="bg-bg-surface-1 rounded p-3 mb-3">
+  <p class="text-sm text-text-secondary">{description}</p>
+  
+  {modules.length > 0 && (
+    <div class="mt-3 pt-3 border-t border-bg-border">
+      <p class="text-xs font-bold text-text-primary mb-2">Course Modules:</p>
+      <ul class="space-y-1">
+        {modules.map((mod, i) => (
+          <li class="flex items-center gap-2 text-xs text-text-muted">
+            <span class="text-accent-primary font-bold">{i + 1}.</span>
+            {mod}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>

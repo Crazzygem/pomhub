@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════
+   POMHUB DEV — Tailwind v4 Theme
+   Inspired by Pornhub.com · Dark-first · Orange accent
+   ═══════════════════════════════════════════════ */
+
+@theme {
+  /* Backgrounds */
+  --color-bg-page: #000000;
+  --color-bg-surface-1: #1b1b1b;
+  --color-bg-surface-2: #212121;
+  --color-bg-surface-3: #252525;
+  --color-bg-surface-4: #292929;
+  --color-bg-surface-5: #313131;
+  --color-bg-border: #151515;
+
+  /* Accent */
+  --color-accent-primary: #ff9900;
+  --color-accent-hover: #ff9000;
+  --color-accent-cta: #ffa31a;
+  --color-accent-cta-text: #000000;
+
+  /* Text */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #c6c6c6;
+  --color-text-muted: #969696;
+  --color-text-dim: #666666;
+  --color-text-link: #ff9900;
+  --color-text-link-hover: #ff9000;
+
+  /* Status */
+  --color-status-red: #e44545;
+  --color-status-green: #34c759;
+  --color-status-yellow: #fbb948;
+
+  /* Font */
+  --font-family-base: Arial, Helvetica, sans-serif;
+
+  /* Radius */
+  --radius-tag: 8px;
+  --radius-cta: 20px;
+
+  /* Animations */
+  --animate-fade-in-up: fade-in-up 0.6s ease-out forwards;
+  --animate-fade-in: fade-in 0.5s ease-out forwards;
+  --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
+
+  @keyframes fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(255, 153, 0, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(255, 153, 0, 0.6); }
+  }
+}
+
+/* ── Base Styles ── */
+html {
+  font-family: var(--font-family-base);
+  color: var(--color-text-primary);
+  background: var(--color-bg-page);
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg-page);
+  min-height: 100vh;
+}
+
+/* ── Utility: underline slide-in on hover ── */
+.underline-slide {
+  @apply relative;
+}
+.underline-slide::after {
+  content: "";
+  @apply absolute bottom-0 left-0 h-[2px] w-0 bg-accent-primary transition-all duration-300;
+}
+.underline-slide:hover::after {
+  @apply w-full;
+}
+
+/* ── Staggered animation delays ── */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }

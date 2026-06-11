@@ -1,0 +1,123 @@
+---
+export interface Props {
+  title: string;
+  channel: string;
+  duration: string;
+  viewCount: number;
+  description: string;
+  category?: string;
+  createdAt?: string;
+}
+
+const { title, channel, duration, viewCount, description, category, createdAt } = Astro.props;
+
+// Derive plausible like count from views (4% engagement)
+const likeCount = viewCount > 0 ? Math.round(viewCount * 0.04) : 0;
+
+// Format like count compactly
+function formatCount(n: number): string {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+  return String(n);
+}
+
+// Relative time from ISO date
+function timeAgo(iso?: string): string {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days < 1) return 'today';
+  if (days === 1) return '1 day ago';
+  if (days < 30) return `${days} days ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
+  const years = Math.floor(months / 12);
+  return `${years} year${years > 1 ? 's' : ''} ago`;
+}
+
+// Category pills
+const pills = [category, 'Beginner', channel].filter(Boolean) as string[];
+---
+
+<div class="mb-3">
+  <!-- Title -->
+  <h1 class="text-[17px] font-bold text-text-primary leading-tight mb-2">
+    {title}
+  </h1>
+
+  <!-- Meta -->
+  <p class="text-xs text-text-muted mb-3">
+    {duration} &middot; {viewCount.toLocaleString()} views
+    {createdAt && <span> &middot; {timeAgo(createdAt)}</span>}
+  </p>
+
+  <!-- Action buttons -->
+  <div class="flex flex-wrap gap-2 mb-3">
+    <button class="flex items-center gap-1.5 text-xs font-bold text-text-secondary bg-bg-surface-2 px-4 py-2 rounded-full hover:bg-bg-surface-5 hover:text-text-primary transition-all duration-200 hover:scale-105 active:scale-95">
+      <span>&#43;</span> Add to Playlist
+    </button>
+    <button class="flex items-center gap-1.5 text-xs font-bold text-text-secondary bg-bg-surface-2 px-4 py-2 rounded-full hover:bg-bg-surface-5 hover:text-text-primary transition-all duration-200 hover:scale-105 active:scale-95">
+      <span>&#8599;</span> Share
+    </button>
+    <button class="flex items-center gap-1.5 text-xs font-bold text-text-secondary bg-bg-surface-2 px-4 py-2 rounded-full hover:text-accent-primary transition-all duration-200 hover:scale-105 active:scale-95">
+      <span>&#9650;</span> {formatCount(likeCount)}
+    </button>
+    <button class="flex items-center gap-1.5 text-xs font-bold text-text-secondary bg-bg-surface-2 px-4 py-2 rounded-full hover:text-status-red transition-all duration-200 hover:scale-105 active:scale-95">
+      <span>&#9660;</span>
+    </button>
+  </div>
+
+  <!-- Category pills -->
+  {pills.length > 0 && (
+    <div class="flex flex-wrap gap-2 mb-3">
+      {pills.map((pill) => (
+        <span class="text-xs font-bold text-text-secondary bg-bg-surface-2 rounded-full px-3 py-1 hover:bg-bg-surface-5 hover:text-text-primary transition-colors duration-200 cursor-pointer">
+          {pill}
+        </span>
+      ))}
+    </div>
+  )}
+
+  <!-- Channel -->
+  <div class="flex items-center gap-3 mb-3">
+    <div class="w-10 h-10 rounded-full bg-accent-primary/20 flex items-center justify-center text-accent-primary font-bold text-sm">
+      {channel.charAt(0)}
+    </div>
+    <div class="flex-1">
+      <a href="#" class="text-sm font-bold text-text-primary hover:text-accent-primary transition-colors duration-200">
+        {channel}
+      </a>
+    </div>
+    <button class="text-xs font-bold text-accent-cta-text bg-accent-cta px-4 py-1.5 rounded-full hover:bg-accent-primary transition-all duration-200 hover:scale-105">
+      Subscribe
+    </button>
+  </div>
+
+  <!-- Description (expandable) -->
+  <div class="bg-bg-surface-1 rounded p-3">
+    <div class="desc-content max-h-[60px] overflow-hidden transition-all duration-300" data-expanded="false">
+      <p class="text-sm text-text-secondary mb-2">{description}</p>
+      <button class="desc-toggle text-xs text-text-muted hover:text-accent-primary transition-colors duration-200">
+        Show more
+      </button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  document.querySelectorAll('.desc-toggle').forEach(btn => {
+    btn.addEventListener('click', function() {
+      var container = this.closest('.desc-content');
+      var expanded = container.getAttribute('data-expanded') === 'true';
+      if (expanded) {
+        container.style.maxHeight = '60px';
+        container.setAttribute('data-expanded', 'false');
+        this.textContent = 'Show more';
+      } else {
+        container.style.maxHeight = 'none';
+        container.setAttribute('data-expanded', 'true');
+        this.textContent = 'Show less';
+      }
+    });
+  });
+</script>

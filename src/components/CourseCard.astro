@@ -1,0 +1,54 @@
+---
+// Course Card — single course item
+export interface Props {
+  youtubeId: string;
+  title: string;
+  channel: string;
+  duration: string;
+  category?: string | null;
+  thumbnailUrl?: string | null;
+  delay?: number;
+}
+
+const { youtubeId, title, channel, duration, category, thumbnailUrl, delay = 0 } = Astro.props;
+
+// Use thumbnailUrl if provided, otherwise construct from youtubeId
+const thumb = thumbnailUrl || `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
+---
+
+<article
+  class="flex flex-col px-5 py-1 group animate-fade-in-up"
+  style={`animation-delay: ${delay}ms`}
+>
+  <!-- Thumbnail with link to video player page -->
+  <a href={`/video/${youtubeId}`} class="relative w-full aspect-video rounded-sm overflow-hidden mb-1.5 transition-all duration-300 group-hover:brightness-110 group-hover:scale-[1.02]">
+    <img src={thumb} alt={title} class="w-full h-full object-cover" loading="lazy" />
+    <span class="absolute bottom-1.5 right-1.5 text-xs text-text-primary bg-black/75 px-1 py-0.5 rounded-sm">
+      {duration}
+    </span>
+  </a>
+
+  <!-- Title -->
+  <a
+    href={`/video/${youtubeId}`}
+    class="text-sm text-text-secondary leading-tight mb-0.5 line-clamp-2 hover:text-text-primary transition-colors duration-200"
+  >
+    {title}
+  </a>
+
+  <!-- Stars (placeholder for now) -->
+  <div class="text-status-yellow text-xs tracking-[1px] mb-0.5">
+    ★★★★★
+  </div>
+
+  <!-- Channel -->
+  <a
+    href="#"
+    class="text-xs text-text-link hover:text-accent-hover transition-colors duration-200"
+  >
+    {channel}
+  </a>
+
+  <!-- Meta -->
+  <span class="text-xs text-text-muted">{duration}</span>
+</article>

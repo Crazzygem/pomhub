@@ -1,0 +1,41 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Hero from "../components/Hero.astro";
+import Categories from "../components/Categories.astro";
+import CourseGrid from "../components/CourseGrid.astro";
+import Testimonials from "../components/Testimonials.astro";
+import BottomCta from "../components/BottomCta.astro";
+
+// Import DB client
+import { db } from "../db/client";
+import { courses } from "../db/schema";
+import { desc } from "drizzle-orm";
+
+// Fetch courses from DB — synced (real YouTube) first, then manual
+const allCourses = db.select().from(courses)
+  .orderBy(desc(courses.id))
+  .all();
+
+// Get featured course for hero (prefer a real synced course)
+const featuredCourse = allCourses.find(c => c.source === "sync" && c.category === "Networking")
+  || allCourses.find(c => c.source === "sync")
+  || allCourses[0];
+
+// Get categories from synced courses
+const categories = [...new Set(
+  allCourses.filter(c => c.source === "sync").map(c => c.category).filter(Boolean)
+)];
+
+// Get top 8 courses (real YouTube data first)
+const popularCourses = allCourses.slice(0, 8);
+---
+
+<Layout>
+  <main class="max-w-[1280px] mx-auto px-5">
+    <Hero course={featuredCourse} />
+    <Categories {categories} />
+    <CourseGrid courses={popularCourses} />
+    <Testimonials />
+    <BottomCta />
+  </main>
+</Layout>

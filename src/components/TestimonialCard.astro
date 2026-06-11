@@ -1,0 +1,31 @@
+---
+// Testimonial Card
+export interface Props {
+  quote: string;
+  author: string;
+  role: string;
+  stars?: number;
+  delay?: number;
+}
+
+const { quote, author, role, stars = 5, delay = 0 } = Astro.props;
+---
+
+<div
+  class="bg-bg-surface-1 p-6 rounded flex flex-col gap-2.5 transition-all duration-300 hover:-translate-y-1 animate-fade-in-up"
+  style={`animation-delay: ${delay}ms`}
+>
+  <p class="text-sm text-text-secondary leading-relaxed italic">
+    <span class="text-accent-primary text-xl not-italic mr-0.5">&ldquo;</span>
+    {quote}
+  </p>
+
+  <div class="text-status-yellow text-xs tracking-[1px]">
+    {Array.from({ length: 5 }, (_, i) => (
+      <span>{i < stars ? "\u2605" : "\u2606"}</span>
+    ))}
+  </div>
+
+  <span class="text-xs font-bold text-text-link">{author}</span>
+  <span class="text-xs text-text-muted">{role}</span>
+</div>
