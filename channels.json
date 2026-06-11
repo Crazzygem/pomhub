@@ -1,0 +1,17 @@
+{
+  "channels": [
+    { "handle": "@NetworkChuck", "category": "Networking" },
+    { "handle": "@Fireship", "category": "General" },
+    { "handle": "@freeCodeCamp", "category": "General" },
+    { "handle": "@TechWorldWithNana", "category": "DevOps" },
+    { "handle": "@TraversyMedia", "category": "Web Dev" },
+    { "handle": "@NetNinja", "category": "Web Dev" },
+    { "handle": "@coreyms", "category": "Python" },
+    { "handle": "@TechWithTim", "category": "Python" },
+    { "handle": "@WebDevSimplified", "category": "Web Dev" },
+    { "handle": "@ByteByteGo", "category": "General" }
+  ],
+  "videosPerPlaylist": 5,
+  "maxPlaylistsPerChannel": 5,
+  "syncIntervalHours": 24
+}

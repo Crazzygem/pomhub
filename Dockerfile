@@ -14,8 +14,8 @@ RUN npm run build
 FROM node:22-alpine AS prod
 WORKDIR /app
 
-# Install Python 3 + yt-dlp for sync script
-RUN apk add --no-cache python3 py3-pip && \
+# Install Python 3 + yt-dlp + cron
+RUN apk add --no-cache python3 py3-pip dcron && \
     python3 -m pip install --break-system-packages --no-cache-dir yt-dlp
 
 # Install only production dependencies
@@ -24,20 +24,25 @@ RUN npm ci --omit=dev
 
 # Copy built output from build stage
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/drizzle ./drizzle
 
-# Copy scripts (for sync)
+# Copy scripts, config, and seed file
 COPY scripts/ ./scripts/
-
-# Copy seed file (for initial setup)
+COPY channels.json ./
 COPY src/db/seed.ts ./src/db/seed.ts
+
+# Copy entrypoint
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Set up cron (daily at 3 AM)
+RUN echo "0 3 * * * cd /app && /usr/bin/python3 scripts/sync.py >> /var/log/sync.log 2>&1" > /var/spool/cron/crontabs/root
 
 # Create data directory for SQLite
 RUN mkdir -p /app/data
 
-# Set default DB path to mounted volume
+# Default DB path (overridden by docker-compose)
 ENV DB_PATH=/app/data/pomhub.db
 
 EXPOSE 4321
 
-CMD ["node", "dist/server/entry.mjs"]
+ENTRYPOINT ["/app/entrypoint.sh"]

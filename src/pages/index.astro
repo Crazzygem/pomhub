@@ -9,25 +9,33 @@ import BottomCta from "../components/BottomCta.astro";
 // Import DB client
 import { db } from "../db/client";
 import { courses } from "../db/schema";
-import { desc } from "drizzle-orm";
 
-// Fetch courses from DB — synced (real YouTube) first, then manual
-const allCourses = db.select().from(courses)
-  .orderBy(desc(courses.id))
-  .all();
+// Fetch all courses and shuffle for dynamic content
+const allCourses = db.select().from(courses).all();
 
-// Get featured course for hero (prefer a real synced course)
-const featuredCourse = allCourses.find(c => c.source === "sync" && c.category === "Networking")
-  || allCourses.find(c => c.source === "sync")
-  || allCourses[0];
+// Fisher-Yates shuffle for random mix from all channels
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
-// Get categories from synced courses
+const shuffled = shuffle(allCourses);
+
+// Get featured course for hero (random synced course)
+const syncedCourses = shuffled.filter(c => c.source === "sync");
+const featuredCourse = syncedCourses[0] || shuffled[0];
+
+// Get categories from all courses
 const categories = [...new Set(
-  allCourses.filter(c => c.source === "sync").map(c => c.category).filter(Boolean)
+  allCourses.map(c => c.category).filter(Boolean)
 )];
 
-// Get top 8 courses (real YouTube data first)
-const popularCourses = allCourses.slice(0, 8);
+// Get 12 random courses for grid
+const popularCourses = shuffled.slice(0, 12);
 ---
 
 <Layout>
