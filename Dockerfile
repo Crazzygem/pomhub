@@ -2,6 +2,9 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
+# Install build tools for native modules (better-sqlite3)
+RUN apk add --no-cache build-base python3
+
 # Install dependencies
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -18,9 +21,8 @@ WORKDIR /app
 RUN apk add --no-cache python3 py3-pip dcron && \
     python3 -m pip install --break-system-packages --no-cache-dir yt-dlp
 
-# Install only production dependencies
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# Copy node_modules from build stage (already compiled for this architecture)
+COPY --from=build /app/node_modules ./node_modules
 
 # Copy built output from build stage
 COPY --from=build /app/dist ./dist
