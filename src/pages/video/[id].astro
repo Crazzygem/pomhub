@@ -47,14 +47,16 @@ for (const c of otherCourses) {
     sidebarVideos.push(c);
   }
 }
-const upNext = sidebarVideos.slice(0, 5);
-const moreCourses = sidebarVideos.slice(5, 10);
 
-// Below-fold grid: all remaining unique videos
-const gridVideos = [...relatedVideos, ...otherCourses]
-  .filter((v, i, arr) => arr.findIndex(x => x.youtubeId === v.youtubeId) === i)
-  .filter(v => v.youtubeId !== id)
-  .slice(0, 12);
+// Below-fold: "Continue Learning" — random courses from different categories
+const continueLearning = db.select().from(courses)
+  .where(and(
+    ne(courses.youtubeId, id),
+    isNotNull(courses.thumbnailUrl),
+  ))
+  .orderBy(desc(courses.id))
+  .limit(12)
+  .all();
 
 // View count display
 const viewCount = course.viewCount ?? 0;
@@ -103,38 +105,59 @@ const ogImage = course.thumbnailUrl || `https://img.youtube.com/vi/${id}/maxresd
 
       <!-- Right Column — Sidebar -->
       <aside class="min-w-0">
-        <RelatedVideos videos={upNext} courses={moreCourses} />
+        <RelatedVideos videos={sidebarVideos} />
       </aside>
 
     </div>
 
-    <!-- Below-fold: Videos You May Like -->
-    {gridVideos.length > 0 && (
+    {/* ── Continue Learning (below fold) ────────── */}
+    {continueLearning.length > 0 && (
       <section class="mt-8 border-t border-bg-border pt-6">
-        <h2 class="text-sm font-bold text-text-primary mb-4 uppercase tracking-wide">
-          Videos You May Like
-        </h2>
+        <div class="flex items-baseline justify-between mb-4">
+          <div>
+            <h2 class="text-sm font-bold text-text-primary uppercase tracking-wide">
+              Continue Learning
+            </h2>
+            <p class="text-xs text-text-muted mt-0.5">
+              More courses from PomHub Dev to build your skills
+            </p>
+          </div>
+          <a href="/" class="text-xs font-bold text-accent-primary hover:underline">
+            Browse all courses &rarr;
+          </a>
+        </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-          {gridVideos.map((video) => (
+          {continueLearning.map((video) => (
             <a
               href={`/video/${video.youtubeId}`}
               class="group block"
             >
-              <div class="relative aspect-video rounded overflow-hidden bg-bg-surface-1 mb-1.5">
+              <div class="relative aspect-video rounded overflow-hidden bg-bg-surface-1 mb-1.5 transition-all duration-300 group-hover:scale-[1.03] group-hover:shadow-md group-hover:shadow-black/40 group-hover:z-10">
                 <img
                   src={video.thumbnailUrl || `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
                   alt={video.title}
-                  class="w-full h-full object-cover transition-all duration-300 group-hover:brightness-75 group-hover:scale-105"
+                  class="w-full h-full object-cover transition-all duration-300 group-hover:brightness-75"
                   loading="lazy"
                 />
                 <span class="absolute bottom-0.5 right-0.5 text-[10px] text-text-primary bg-black/75 px-1 py-0.5 rounded">
                   {video.duration}
                 </span>
+                <!-- Play button overlay -->
+                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div class="w-10 h-10 rounded-full bg-accent-primary/90 flex items-center justify-center shadow-lg shadow-black/50">
+                    <span class="text-accent-cta-text text-sm ml-0.5">&#9654;</span>
+                  </div>
+                </div>
               </div>
               <p class="text-xs text-text-secondary leading-tight line-clamp-2 group-hover:text-text-primary transition-colors duration-200">
                 {video.title}
               </p>
               <p class="text-[10px] text-text-muted mt-0.5">{video.channel}</p>
+              {video.category && (
+                <span class="text-[9px] text-accent-primary mt-0.5 inline-block">
+                  {video.category}
+                </span>
+              )}
             </a>
           ))}
         </div>

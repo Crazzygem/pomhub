@@ -1,34 +1,48 @@
 ---
-// Categories — pill row
+// Categories — pill row with filter links
 export interface Props {
   categories?: string[];
+  activeCategory?: string;
 }
 
-const { categories = [
-  "Web Development",
-  "Data Science",
-  "Python",
-  "Machine Learning",
-  "DevOps",
-  "Mobile Development",
-  "UI/UX Design",
-  "Cybersecurity",
-] } = Astro.props;
+const {
+  categories = ["Web Development", "Data Science", "Python", "Machine Learning", "DevOps", "Mobile Development"],
+  activeCategory,
+} = Astro.props;
 ---
 
-<section class="animate-fade-in-up delay-100">
+<section id="categories" class="animate-fade-in-up delay-100">
   <h2 class="text-base font-bold text-text-primary capitalize mb-3 pb-2 border-b border-bg-border">
     Categories
   </h2>
 
   <div class="flex flex-wrap gap-2 mb-2">
-    {categories.map((cat) => (
-      <a
-        href="#"
-        class="inline-block text-sm text-text-primary bg-bg-surface-1 px-[18px] py-2 rounded-[8px] hover:bg-bg-surface-5 transition-all duration-200 hover:scale-105"
-      >
-        {cat}
-      </a>
-    ))}
+    <!-- All -->
+    <a
+      href="/"
+      class={`inline-block text-sm px-[18px] py-2 rounded-[8px] transition-all duration-200 hover:scale-105 ${
+        activeCategory
+          ? "text-text-primary bg-bg-surface-1 hover:bg-bg-surface-5"
+          : "text-accent-cta-text bg-accent-primary font-bold"
+      }`}
+    >
+      All
+    </a>
+
+    {categories.map((cat) => {
+      const isActive = cat === activeCategory;
+      return (
+        <a
+          href={`/?category=${encodeURIComponent(cat)}`}
+          class={`inline-block text-sm px-[18px] py-2 rounded-[8px] transition-all duration-200 hover:scale-105 ${
+            isActive
+              ? "text-accent-cta-text bg-accent-primary font-bold"
+              : "text-text-primary bg-bg-surface-1 hover:bg-bg-surface-5"
+          }`}
+        >
+          {cat}
+        </a>
+      );
+    })}
   </div>
 </section>

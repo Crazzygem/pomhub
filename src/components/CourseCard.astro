@@ -17,15 +17,30 @@ const thumb = thumbnailUrl || `https://img.youtube.com/vi/${youtubeId}/mqdefault
 ---
 
 <article
-  class="flex flex-col px-5 py-1 group animate-fade-in-up"
+  class="flex flex-col px-1.5 py-1 group animate-fade-in-up overflow-hidden"
   style={`animation-delay: ${delay}ms`}
 >
-  <!-- Thumbnail with link to video player page -->
-  <a href={`/video/${youtubeId}`} class="relative w-full aspect-video rounded-sm overflow-hidden mb-1.5 transition-all duration-300 group-hover:brightness-110 group-hover:scale-[1.02]">
-    <img src={thumb} alt={title} class="w-full h-full object-cover" loading="lazy" />
-    <span class="absolute bottom-1.5 right-1.5 text-xs text-text-primary bg-black/75 px-1 py-0.5 rounded-sm">
+  <!-- Thumbnail with button-like hover popout -->
+  <a
+    href={`/video/${youtubeId}`}
+    class="relative w-full aspect-video rounded-sm overflow-hidden mb-1.5 transition-all duration-300 group-hover:scale-[1.03] group-hover:shadow-lg group-hover:shadow-black/40 group-hover:z-10"
+  >
+    <img
+      src={thumb}
+      alt={title}
+      class="w-full h-full object-cover transition-all duration-300 group-hover:brightness-75"
+      loading="lazy"
+    />
+    <!-- Duration badge -->
+    <span class="absolute bottom-1 right-1 text-xs text-text-primary bg-black/80 px-1 py-0.5 rounded-sm font-medium">
       {duration}
     </span>
+    <!-- Play button overlay (appears on hover) -->
+    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <div class="w-10 h-10 rounded-full bg-accent-primary/90 flex items-center justify-center shadow-lg shadow-black/50">
+        <span class="text-accent-cta-text text-sm ml-0.5">&#9654;</span>
+      </div>
+    </div>
   </a>
 
   <!-- Title -->
@@ -36,11 +51,6 @@ const thumb = thumbnailUrl || `https://img.youtube.com/vi/${youtubeId}/mqdefault
     {title}
   </a>
 
-  <!-- Stars (placeholder for now) -->
-  <div class="text-status-yellow text-xs tracking-[1px] mb-0.5">
-    ★★★★★
-  </div>
-
   <!-- Channel -->
   <a
     href="#"
@@ -48,7 +58,4 @@ const thumb = thumbnailUrl || `https://img.youtube.com/vi/${youtubeId}/mqdefault
   >
     {channel}
   </a>
-
-  <!-- Meta -->
-  <span class="text-xs text-text-muted">{duration}</span>
 </article>

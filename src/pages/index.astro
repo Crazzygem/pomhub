@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Hero from "../components/Hero.astro";
 import Categories from "../components/Categories.astro";
+import SortTabs from "../components/SortTabs.astro";
 import CourseGrid from "../components/CourseGrid.astro";
 import Testimonials from "../components/Testimonials.astro";
 import BottomCta from "../components/BottomCta.astro";
@@ -10,10 +10,24 @@ import BottomCta from "../components/BottomCta.astro";
 import { db } from "../db/client";
 import { courses } from "../db/schema";
 
-// Fetch all courses and shuffle for dynamic content
+export const prerender = false;
+
+const PAGE_SIZE = 40; // 8 rows × 5 columns
+
+// Fetch all courses
 const allCourses = db.select().from(courses).all();
 
-// Fisher-Yates shuffle for random mix from all channels
+// ── URL params ──────────────────────────────
+const activeCategory = Astro.url.searchParams.get("category") || undefined;
+const activeSort = Astro.url.searchParams.get("sort") || undefined;
+const pageParam = Astro.url.searchParams.get("page");
+
+// ── Filter by category ──────────────────────
+const filteredCourses = activeCategory
+  ? allCourses.filter(c => c.category === activeCategory)
+  : allCourses;
+
+// ── Fisher-Yates shuffle ────────────────────
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -23,27 +37,112 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-const shuffled = shuffle(allCourses);
+const shuffled = shuffle(filteredCourses);
+const totalPages = Math.ceil(shuffled.length / PAGE_SIZE) || 1;
 
-// Get featured course for hero (random synced course)
-const syncedCourses = shuffled.filter(c => c.source === "sync");
-const featuredCourse = syncedCourses[0] || shuffled[0];
+const currentPage = Math.max(1, Math.min(parseInt(pageParam || "1") || 1, totalPages));
 
-// Get categories from all courses
+// Slice for current page
+const startIdx = (currentPage - 1) * PAGE_SIZE;
+const pageCourses = shuffled.slice(startIdx, startIdx + PAGE_SIZE);
+
+// Pick a featured course
+const syncedCourses = allCourses.filter(c => c.source === "sync");
+const featured = syncedCourses.length > 0
+  ? syncedCourses[Math.floor(Math.random() * syncedCourses.length)]
+  : allCourses[0];
+
+// Get categories from all courses (unfiltered)
 const categories = [...new Set(
   allCourses.map(c => c.category).filter(Boolean)
 )];
 
-// Get 12 random courses for grid
-const popularCourses = shuffled.slice(0, 12);
+const videoCount = filteredCourses.length;
+const videoLabel = activeCategory
+  ? `${videoCount} videos in ${activeCategory}`
+  : `${videoCount} videos`;
+
+// Build active sort label for display
+const sortLabels: Record<string, string> = {
+  "hot": "Hot",
+  "most-viewed": "Most Viewed",
+  "top-rated": "Top Rated",
+  "newest": "Newest",
+};
+const activeSortLabel = activeSort && sortLabels[activeSort] ? sortLabels[activeSort] : "Hot";
 ---
 
 <Layout>
   <main class="max-w-[1280px] mx-auto px-5">
-    <Hero course={featuredCourse} />
-    <Categories {categories} />
-    <CourseGrid courses={popularCourses} />
+
+    {/* ── Compact Featured Hero ────────────────── */}
+    {featured && (
+      <section class="relative mt-3 mb-4 rounded-lg overflow-hidden bg-bg-surface-1 border border-bg-border">
+        <div class="absolute inset-0">
+          <img
+            src={featured.thumbnailUrl || `https://img.youtube.com/vi/${featured.youtubeId}/maxresdefault.jpg`}
+            alt=""
+            class="w-full h-full object-cover opacity-20 blur-sm"
+            loading="eager"
+          />
+          <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent"></div>
+        </div>
+        <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 sm:p-5">
+          <div class="flex-1 min-w-0">
+            <span class="text-[10px] font-bold text-accent-primary uppercase tracking-wider mb-1 block">
+              {featured.category || "Featured"}
+            </span>
+            <h2 class="text-base sm:text-lg font-bold text-text-primary leading-tight line-clamp-2 mb-1">
+              {featured.title}
+            </h2>
+            <p class="text-xs text-text-muted">
+              by {featured.channel}
+              &middot; {featured.duration}
+              {featured.viewCount && <span> &middot; {(featured.viewCount).toLocaleString()} views</span>}
+            </p>
+          </div>
+          <a
+            href={`/video/${featured.youtubeId}`}
+            class="inline-flex items-center gap-1.5 text-xs font-bold text-accent-cta-text bg-accent-cta px-5 py-2 border-2 border-accent-cta-text rounded-full whitespace-nowrap hover:bg-accent-primary transition-all duration-300 hover:scale-105 active:scale-95 flex-shrink-0"
+          >
+            &#9654; Watch Now
+          </a>
+        </div>
+      </section>
+    )}
+
+    {/* ── Categories ─────────────────────────────── */}
+    <Categories {categories} activeCategory={activeCategory} />
+
+    {/* ── Sort Tabs + Video Count ──────────────── */}
+    <div class="mt-4 border-b border-bg-border pb-2 flex items-end justify-between">
+      <SortTabs activeTab={activeSort || "hot"} category={activeCategory} />
+      <span class="text-xs text-text-muted mb-0.5">
+        {videoLabel} &middot; page {currentPage} of {totalPages}
+      </span>
+    </div>
+
+    {/* ── Course Grid ───────────────────────────── */}
+    <section class="mt-3">
+      {pageCourses.length > 0 ? (
+        <CourseGrid
+          courses={pageCourses}
+          currentPage={currentPage}
+          totalPages={totalPages}
+        />
+      ) : (
+        <p class="text-sm text-text-muted py-8 text-center">
+          No courses found in this category.
+          <a href="/" class="text-accent-primary hover:underline ml-1">Show all courses</a>
+        </p>
+      )}
+    </section>
+
+    {/* ── Testimonials ──────────────────────────── */}
     <Testimonials />
+
+    {/* ── Bottom CTA ─────────────────────────────── */}
     <BottomCta />
+
   </main>
 </Layout>

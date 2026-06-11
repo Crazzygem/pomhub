@@ -12,21 +12,21 @@ export interface Props {
     category?: string | null;
     thumbnailUrl?: string | null;
   }[];
+  currentPage?: number;
+  totalPages?: number;
 }
 
-const { courses } = Astro.props;
+const { courses, currentPage = 1, totalPages = 1 } = Astro.props;
 ---
 
 <section>
-  <h2 class="text-base font-bold text-text-primary capitalize mb-3 pb-2 border-b border-bg-border">
-    Popular Courses
-  </h2>
-
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-2.5 gap-x-0">
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-3 gap-x-1">
     {courses.map((course, i) => (
-      <CourseCard {...course} delay={i * 80} />
+      <CourseCard {...course} delay={i * 30} />
     ))}
   </div>
 
-  <Pagination />
+  {totalPages > 1 && (
+    <Pagination {currentPage} {totalPages} />
+  )}
 </section>

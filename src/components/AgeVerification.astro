@@ -1,0 +1,128 @@
+---
+// 4 parody age verification messages
+const gates = [
+  {
+    title: "Are you old enough to code?",
+    body: "This site contains graphic amounts of semicolons, indentation debates, tabs vs spaces arguments, and excessive console.log() statements.",
+    accept: "I'm ready to suffer",
+    reject: "I'll use W3Schools instead",
+  },
+  {
+    title: "WARNING: Technical Content Ahead",
+    body: "By entering, you confirm you are at least 13 years old and mentally prepared to debug CSS at 3am, argue about React vs Vue, pretend you understand Kubernetes, and watch a 4-hour tutorial you'll never finish.",
+    accept: "I accept my fate",
+    reject: "I need a mentor",
+  },
+  {
+    title: "AGE VERIFICATION",
+    body: "This site is for educational purposes only. No actual Pornhub content is available here. We just really like the orange aesthetic. By entering, you agree to learn things, build projects, and never tell anyone you learned to code from YouTube.",
+    accept: "I'm 18+ (years of imposter syndrome)",
+    reject: "I'm just browsing",
+  },
+  {
+    title: "1 critical vulnerability found",
+    body: "This site requires you to be at least 18 years old to view this content. Content includes intense learning, project deadlines, and the crushing weight of uncompleted side projects.",
+    accept: "npm run accept",
+    reject: "npm run reject",
+  },
+];
+---
+
+<div id="age-gate" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm transition-opacity duration-300" style="display: none;">
+  <div class="bg-bg-surface-1 border-t-4 border-accent-primary rounded-lg max-w-md w-full mx-4 shadow-2xl shadow-black/50 overflow-hidden">
+    {/* ── Header with logo ── */}
+    <div class="px-6 pt-5 pb-3">
+      <div class="flex items-center justify-center select-none mb-3">
+        <span class="text-white font-black text-2xl tracking-tight leading-none">Pom</span>
+        <span class="bg-accent-primary text-black font-black text-2xl px-1 py-0.5 rounded-[3px] tracking-tight leading-none ml-[1px]">hub</span>
+        <span class="text-lg font-bold text-text-muted ml-2 leading-none self-start mt-0.5">Dev</span>
+      </div>
+      <h2 class="text-base font-bold text-text-primary text-center mb-2" id="gate-title"></h2>
+      <p class="text-xs text-text-muted text-center leading-relaxed" id="gate-body"></p>
+    </div>
+
+    {/* ── Buttons ── */}
+    <div class="px-6 pb-4 space-y-2">
+      <button
+        id="gate-accept"
+        class="w-full text-sm font-bold text-accent-cta-text bg-accent-primary rounded-full py-2.5 hover:bg-accent-hover transition-all duration-200 hover:scale-[1.02] active:scale-95"
+      ></button>
+      <button
+        id="gate-reject"
+        class="w-full text-xs text-text-muted bg-transparent py-1.5 hover:text-text-secondary transition-colors duration-200"
+      ></button>
+    </div>
+
+    {/* ── Footer ── */}
+    <div class="px-6 pb-4 text-center">
+      <p class="text-[10px] text-text-dim">
+        This is a parody. No actual age verification required.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function() {
+    var STORAGE_KEY = 'pomhub-age-verified';
+
+    // Already accepted? Skip.
+    if (localStorage.getItem(STORAGE_KEY)) return;
+
+    var gates = [
+      {
+        title: "Are you old enough to code?",
+        body: "This site contains graphic amounts of semicolons, indentation debates, tabs vs spaces arguments, and excessive console.log() statements.",
+        accept: "I'm ready to suffer",
+        reject: "I'll use W3Schools instead",
+      },
+      {
+        title: "WARNING: Technical Content Ahead",
+        body: "By entering, you confirm you are at least 13 years old and mentally prepared to debug CSS at 3am, argue about React vs Vue, pretend you understand Kubernetes, and watch a 4-hour tutorial you'll never finish.",
+        accept: "I accept my fate",
+        reject: "I need a mentor",
+      },
+      {
+        title: "AGE VERIFICATION",
+        body: "This site is for educational purposes only. No actual Pornhub content is available here. We just really like the orange aesthetic. By entering, you agree to learn things, build projects, and never tell anyone you learned to code from YouTube.",
+        accept: "I'm 18+ (years of imposter syndrome)",
+        reject: "I'm just browsing",
+      },
+      {
+        title: "1 critical vulnerability found",
+        body: "This site requires you to be at least 18 years old to view this content. Content includes intense learning, project deadlines, and the crushing weight of uncompleted side projects.",
+        accept: "npm run accept",
+        reject: "npm run reject",
+      },
+    ];
+
+    // Randomly pick one
+    var gate = gates[Math.floor(Math.random() * gates.length)];
+
+    // Populate modal
+    document.getElementById('gate-title').textContent = gate.title;
+    document.getElementById('gate-body').textContent = gate.body;
+    document.getElementById('gate-accept').textContent = gate.accept;
+    document.getElementById('gate-reject').textContent = gate.reject;
+
+    // Show modal
+    var overlay = document.getElementById('age-gate');
+    overlay.style.display = 'flex';
+
+    // Disable body scroll
+    document.body.style.overflow = 'hidden';
+
+    // Accept handler
+    document.getElementById('gate-accept').addEventListener('click', function() {
+      localStorage.setItem(STORAGE_KEY, '1');
+      overlay.style.opacity = '0';
+      document.body.style.overflow = '';
+      setTimeout(function() { overlay.style.display = 'none'; }, 300);
+    });
+
+    // Reject handler — classic PH exit link joke
+    document.getElementById('gate-reject').addEventListener('click', function() {
+      window.location.href = 'https://google.com';
+    });
+  })();
+</script>

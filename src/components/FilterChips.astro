@@ -1,0 +1,41 @@
+---
+// FilterChips — horizontal scrollable category chips
+export interface Props {
+  categories?: string[];
+  activeCategory?: string;
+}
+
+const {
+  categories = ["All", "Web Dev", "Python", "DevOps", "Networking", "General"],
+  activeCategory = "All",
+} = Astro.props;
+---
+
+<div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+  {categories.map((cat) => {
+    const isActive = cat === activeCategory;
+    return (
+      <button
+        class:list={[
+          "inline-flex items-center text-sm px-4 py-1.5 rounded-[8px] whitespace-nowrap transition-all duration-200 cursor-pointer",
+          isActive
+            ? "bg-accent-primary text-accent-cta-text font-bold"
+            : "bg-bg-surface-1 text-text-primary hover:bg-bg-surface-5",
+        ]}
+        data-category={cat}
+      >
+        {cat}
+      </button>
+    );
+  })}
+</div>
+
+<style>
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+</style>

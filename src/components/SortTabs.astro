@@ -1,0 +1,43 @@
+---
+// SortTabs — Pornhub-style filter tabs
+export interface Props {
+  activeTab?: string;
+  category?: string;
+}
+
+const { activeTab = "Hot", category } = Astro.props;
+
+const tabs = [
+  { label: "Hot", sort: "hot" },
+  { label: "Most Viewed", sort: "most-viewed" },
+  { label: "Top Rated", sort: "top-rated" },
+  { label: "Newest", sort: "newest" },
+];
+
+// Build URL preserving current category if active
+function sortUrl(sort: string): string {
+  const params = new URLSearchParams();
+  params.set("sort", sort);
+  if (category) params.set("category", category);
+  return "/?" + params.toString();
+}
+---
+
+<div class="flex items-center gap-1 border-b border-bg-border pb-0">
+  {tabs.map((tab) => {
+    const isActive = tab.sort === activeTab;
+    return (
+      <a
+        href={sortUrl(tab.sort)}
+        class:list={[
+          "text-sm uppercase tracking-wide px-3 py-2 transition-colors duration-200 border-b-2",
+          isActive
+            ? "text-accent-primary border-accent-primary font-bold"
+            : "text-text-muted border-transparent hover:text-text-secondary",
+        ]}
+      >
+        {tab.label}
+      </a>
+    );
+  })}
+</div>

@@ -45,6 +45,17 @@ const pills = [category, 'Beginner', channel].filter(Boolean) as string[];
     {title}
   </h1>
 
+  <!-- Category pills -->
+  {pills.length > 0 && (
+    <div class="flex flex-wrap gap-2 mb-3">
+      {pills.map((pill) => (
+        <span class="text-xs font-bold text-text-secondary bg-bg-surface-2 rounded-full px-3 py-1 hover:bg-bg-surface-5 hover:text-text-primary transition-colors duration-200 cursor-pointer">
+          {pill}
+        </span>
+      ))}
+    </div>
+  )}
+
   <!-- Meta -->
   <p class="text-xs text-text-muted mb-3">
     {duration} &middot; {viewCount.toLocaleString()} views
@@ -66,17 +77,6 @@ const pills = [category, 'Beginner', channel].filter(Boolean) as string[];
       <span>&#9660;</span>
     </button>
   </div>
-
-  <!-- Category pills -->
-  {pills.length > 0 && (
-    <div class="flex flex-wrap gap-2 mb-3">
-      {pills.map((pill) => (
-        <span class="text-xs font-bold text-text-secondary bg-bg-surface-2 rounded-full px-3 py-1 hover:bg-bg-surface-5 hover:text-text-primary transition-colors duration-200 cursor-pointer">
-          {pill}
-        </span>
-      ))}
-    </div>
-  )}
 
   <!-- Channel -->
   <div class="flex items-center gap-3 mb-3">

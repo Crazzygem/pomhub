@@ -1,34 +1,71 @@
 ---
-// Pagination
-const pages = [1, 2, 3, 4, 5, "...", 10];
+// Pagination — page numbers
+export interface Props {
+  currentPage: number;
+  totalPages: number;
+  baseUrl?: string;
+}
+
+const { currentPage, totalPages, baseUrl = "/" } = Astro.props;
+
+// Build page number array with ellipsis
+function buildPages(current: number, total: number): (number | "...")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | "...")[] = [];
+  if (current <= 4) {
+    for (let i = 1; i <= Math.min(5, total); i++) pages.push(i);
+    if (total > 5) pages.push("...", total);
+  } else if (current >= total - 3) {
+    pages.push(1, "...");
+    for (let i = total - 4; i <= total; i++) pages.push(i);
+  } else {
+    pages.push(1, "...");
+    for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+    pages.push("...", total);
+  }
+  return pages;
+}
+
+const pages = buildPages(currentPage, totalPages);
 ---
 
-<div class="flex items-center justify-center gap-1 my-5 animate-fade-in-up delay-300">
-  <a
-    href="#"
-    class="text-xs text-text-secondary px-2 py-1 hover:text-accent-hover transition-colors duration-200"
-  >
-    Prev
-  </a>
+<div class="flex items-center justify-center gap-1 my-5">
+  {currentPage > 1 ? (
+    <a
+      href={`${baseUrl}?page=${currentPage - 1}`}
+      class="text-xs text-text-secondary px-2 py-1 hover:text-accent-hover transition-colors duration-200"
+    >
+      Prev
+    </a>
+  ) : (
+    <span class="text-xs text-text-dim px-2 py-1">Prev</span>
+  )}
 
   {pages.map((page) =>
     page === "..." ? (
       <span class="text-xs text-text-muted px-1">...</span>
     ) : (
       <a
-        href="#"
-        class="text-xl text-accent-cta-text bg-accent-primary px-3 py-1 rounded-sm leading-tight transition-all duration-200 hover:bg-accent-hover hover:scale-105"
-        class:list={{ "cursor-default": page === 1 }}
+        href={`${baseUrl}?page=${page}`}
+        class={`text-xs px-3 py-1 rounded-sm leading-tight transition-all duration-200 ${
+          page === currentPage
+            ? "text-accent-cta-text bg-accent-primary hover:scale-105 font-bold"
+            : "text-text-secondary hover:text-accent-hover hover:bg-bg-surface-2"
+        }`}
       >
         {page}
       </a>
     )
   )}
 
-  <a
-    href="#"
-    class="text-xs text-text-secondary px-2 py-1 hover:text-accent-hover transition-colors duration-200"
-  >
-    Next
-  </a>
+  {currentPage < totalPages ? (
+    <a
+      href={`${baseUrl}?page=${currentPage + 1}`}
+      class="text-xs text-text-secondary px-2 py-1 hover:text-accent-hover transition-colors duration-200"
+    >
+      Next
+    </a>
+  ) : (
+    <span class="text-xs text-text-dim px-2 py-1">Next</span>
+  )}
 </div>

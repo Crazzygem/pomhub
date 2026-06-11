@@ -1,5 +1,5 @@
 ---
-// Footer
+// Footer — minimal 2-column layout
 
 interface FooterGroup {
   title: string;
@@ -10,31 +10,11 @@ const groups: FooterGroup[] = [
   {
     title: "Platform",
     links: [
-      { label: "All Courses", href: "#" },
+      { label: "All Courses", href: "/" },
       { label: "Learning Paths", href: "#" },
       { label: "Pricing", href: "#" },
       { label: "For Teams", href: "#" },
       { label: "Free Courses", href: "#" },
-    ],
-  },
-  {
-    title: "Support",
-    links: [
-      { label: "FAQ", href: "#" },
-      { label: "Contact", href: "#" },
-      { label: "Help Center", href: "#" },
-      { label: "Community", href: "#" },
-      { label: "Report Issue", href: "#" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Press", href: "#" },
-      { label: "Partners", href: "#" },
     ],
   },
   {
@@ -43,18 +23,15 @@ const groups: FooterGroup[] = [
       { label: "Terms of Service", href: "#" },
       { label: "Privacy Notice", href: "#" },
       { label: "DMCA", href: "#" },
-      { label: "Accessibility", href: "#" },
       { label: "Cookie Notice", href: "#" },
     ],
   },
 ];
-
-const badges = ["RTA", "Sitemap", "Mobile", "Visually Impaired"];
 ---
 
-<footer class="border-t border-bg-border px-5 pt-6 pb-8 mt-6">
+<footer class="border-t border-bg-border px-5 pt-5 pb-6 mt-6">
   <!-- Link groups -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-[1280px] mx-auto">
+  <div class="grid grid-cols-2 gap-6 max-w-[1280px] mx-auto">
     {groups.map((group) => (
       <div>
         <h4 class="text-[13px] font-bold text-[#cccccc] uppercase mb-2.5">
@@ -76,15 +53,8 @@ const badges = ["RTA", "Sitemap", "Mobile", "Visually Impaired"];
     ))}
   </div>
 
-  <!-- Bottom bar -->
-  <div class="max-w-[1280px] mx-auto mt-5 pt-4 border-t border-bg-border flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-text-dim">
+  <!-- Copyright -->
+  <div class="max-w-[1280px] mx-auto mt-4 pt-3 border-t border-bg-border text-xs text-text-dim text-center">
     <span>&copy; 2026 PomHub Dev. All rights reserved.</span>
-    <div class="flex gap-4 items-center">
-      {badges.map((badge) => (
-        <a href="#" class="text-text-dim hover:text-accent-hover transition-colors duration-200 text-[11px]">
-          {badge}
-        </a>
-      ))}
-    </div>
   </div>
 </footer>
