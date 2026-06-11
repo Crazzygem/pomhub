@@ -27,10 +27,11 @@ COPY --from=build /app/node_modules ./node_modules
 # Copy built output from build stage
 COPY --from=build /app/dist ./dist
 
-# Copy scripts, config, and seed file
+# Copy scripts, config, seed file, and comment generation source
 COPY scripts/ ./scripts/
 COPY channels.json ./
-COPY src/db/seed.ts ./src/db/seed.ts
+COPY src/db/ ./src/db/
+COPY src/lib/ ./src/lib/
 
 # Copy entrypoint
 COPY entrypoint.sh /app/entrypoint.sh

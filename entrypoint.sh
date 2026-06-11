@@ -23,7 +23,21 @@ if [ -f /app/src/db/seed.ts ]; then
     echo "📦 Creating tables and seeding channels..."
     cd /app && npx tsx src/db/seed.ts || echo "⚠ Seed had issues, but continuing..."
   else
-    echo "✅ Database already initialized"
+    # Check if comments table exists (might be missing on existing DBs)
+    COMMENTS_EXISTS=$(node -e "
+      try {
+        const db = require('better-sqlite3')(process.env.DB_PATH || '/app/data/pomhub.db');
+        const row = db.prepare(\"SELECT name FROM sqlite_master WHERE type='table' AND name='comments'\").get();
+        process.exit(row ? 0 : 1);
+      } catch(e) { process.exit(1); }
+    " 2>/dev/null && echo "yes" || echo "no")
+
+    if [ "$COMMENTS_EXISTS" = "no" ]; then
+      echo "📦 Adding comments table and seeding comments..."
+      cd /app && npx tsx src/db/seed.ts || echo "⚠ Comment seed had issues, but continuing..."
+    else
+      echo "✅ Database already initialized"
+    fi
   fi
 fi
 
