@@ -1,8 +1,7 @@
 services:
   app:
     build: .
-    ports:
-      - "4321:4321"
+    network_mode: host
     volumes:
       - ./data:/app/data
     environment:
