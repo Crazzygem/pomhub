@@ -53,6 +53,101 @@ docker compose up -d --build
 
 Data persists in `./data/pomhub.db` (Docker volume).
 
+## Deployment
+
+### VPS Deployment (Recommended)
+
+The easiest way to deploy is Docker on a VPS (DigitalOcean, Hetzner, Vultr, etc.).
+
+**Prerequisites:**
+- A VPS with Docker and Docker Compose installed
+- Git access to this repository
+
+**Steps:**
+
+```bash
+# 1. SSH into your VPS
+ssh root@your-vps-ip
+
+# 2. Clone the repository
+git clone <your-repo-url>
+cd pomhub-dev
+
+# 3. Build and start
+docker compose up -d --build
+
+# 4. Check status
+docker compose logs -f app
+```
+
+The app will:
+- Build the Docker image (first time only, ~2 min)
+- Run initial YouTube sync (~5 min)
+- Start the web server on port 4321
+- Set up daily cron at 3 AM for content updates
+
+**Access the site:** `http://your-vps-ip:4321`
+
+### Docker Install (if not installed)
+
+```bash
+# Ubuntu/Debian
+curl -fsSL https://get.docker.com | sh
+usermod -aG docker $USER
+# Log out and back in, then:
+docker compose up -d --build
+```
+
+### Keeping It Updated
+
+```bash
+# Pull latest changes
+git pull
+
+# Rebuild and restart
+docker compose up -d --build
+```
+
+### Checking Sync Status
+
+```bash
+# View sync logs
+docker compose exec app cat /var/log/sync.log
+
+# Run manual sync
+docker compose exec app python3 scripts/sync.py
+
+# Check database stats
+docker compose exec app python3 -c "
+import sqlite3
+conn = sqlite3.connect('/app/data/pomhub.db')
+print(f'Courses: {conn.execute(\"SELECT COUNT(*) FROM courses\").fetchone()[0]}')
+print(f'Channels: {conn.execute(\"SELECT COUNT(*) FROM channels\").fetchone()[0]}')
+conn.close()
+"
+```
+
+### Data Persistence
+
+The SQLite database lives in `./data/pomhub.db` on the host (mounted as a Docker volume).
+
+| Action | Database |
+|--------|----------|
+| Container restart | Survives |
+| `docker compose down` + `up` | Survives |
+| Server reboot | Survives |
+| `docker compose down -v` | **Wiped** (only if you use `-v` flag) |
+
+### Adding New Channels (Production)
+
+```bash
+# Edit channels.json on the VPS
+nano channels.json
+
+# Run sync to fetch new content
+docker compose exec app python3 scripts/sync.py
+```
+
 ## Adding Channels
 
 Edit `channels.json`:
