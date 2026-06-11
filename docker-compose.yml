@@ -6,6 +6,8 @@ services:
       - ./data:/app/data
     environment:
       - DB_PATH=/app/data/pomhub.db
+      - HOST=0.0.0.0
+      - PORT=4321
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:4321/"]
