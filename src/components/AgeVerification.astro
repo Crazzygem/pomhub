@@ -66,8 +66,8 @@ const gates = [
   (function() {
     var STORAGE_KEY = 'pomhub-age-verified';
 
-    // Already accepted? Skip.
-    if (localStorage.getItem(STORAGE_KEY)) return;
+    // Already accepted this session? Skip.
+    if (sessionStorage.getItem(STORAGE_KEY)) return;
 
     var gates = [
       {
@@ -114,7 +114,7 @@ const gates = [
 
     // Accept handler
     document.getElementById('gate-accept').addEventListener('click', function() {
-      localStorage.setItem(STORAGE_KEY, '1');
+      sessionStorage.setItem(STORAGE_KEY, '1');
       overlay.style.opacity = '0';
       document.body.style.overflow = '';
       setTimeout(function() { overlay.style.display = 'none'; }, 300);
