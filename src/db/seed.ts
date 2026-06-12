@@ -70,29 +70,27 @@ sqlite.exec(`
   );
 `);
 
-// Read channels config
-const config = JSON.parse(readFileSync(configPath, "utf-8"));
-const channels = config.channels || [];
+async function main() {
+  const config = JSON.parse(readFileSync(configPath, "utf-8"));
+  const channels = config.channels || [];
 
-console.log(`\n📡 Seeding ${channels.length} channels...`);
+  console.log(`\n📡 Seeding ${channels.length} channels...`);
 
-// Insert channels
-const insertChannel = sqlite.prepare(
-  "INSERT OR IGNORE INTO channels (handle, name, category) VALUES (?, ?, ?)"
-);
+  const insertChannel = sqlite.prepare(
+    "INSERT OR IGNORE INTO channels (handle, name, category) VALUES (?, ?, ?)"
+  );
 
-for (const ch of channels) {
-  insertChannel.run(ch.handle, ch.handle.replace("@", ""), ch.category);
-  console.log(`  ✅ ${ch.handle} (${ch.category})`);
-}
+  for (const ch of channels) {
+    insertChannel.run(ch.handle, ch.handle.replace("@", ""), ch.category);
+    console.log(`  ✅ ${ch.handle} (${ch.category})`);
+  }
 
-console.log(`\n📋 Discovering playlists (this may take a minute)...\n`);
+  console.log(`\n📋 Discovering playlists (this may take a minute)...\n`);
 
-// Discover playlists from each channel using yt-dlp
-function discoverPlaylists(handle: string): Array<{ id: string; title: string }> {
-  try {
-    const url = `https://www.youtube.com/${handle}/playlists`;
-    const pyScript = `
+  function discoverPlaylists(handle: string): Array<{ id: string; title: string }> {
+    try {
+      const url = `https://www.youtube.com/${handle}/playlists`;
+      const pyScript = `
 import yt_dlp, json
 opts = {'quiet': True, 'no_warnings': True, 'extract_flat': True, 'playlistend': 30}
 with yt_dlp.YoutubeDL(opts) as ydl:
@@ -103,68 +101,72 @@ with yt_dlp.YoutubeDL(opts) as ydl:
     else:
         print('[]')
 `;
-    const output = execSync(`python3 -c "${pyScript.replace(/"/g, '\\"')}"`, {
-      encoding: "utf-8",
-      timeout: 60000,
-    });
-    return JSON.parse(output.trim());
-  } catch (e) {
-    console.log(`  ⚠ Failed to discover playlists for ${handle}`);
-    return [];
+      const output = execSync(`python3 -c "${pyScript.replace(/"/g, '\\"')}"`, {
+        encoding: "utf-8",
+        timeout: 60000,
+      });
+      return JSON.parse(output.trim());
+    } catch (e) {
+      console.log(`  ⚠ Failed to discover playlists for ${handle}`);
+      return [];
+    }
   }
-}
 
-const insertPlaylist = sqlite.prepare(
-  "INSERT OR IGNORE INTO playlists (youtube_playlist_id, name, channel, channel_handle) VALUES (?, ?, ?, ?)"
-);
-
-let totalPlaylists = 0;
-
-for (const ch of channels) {
-  const handle = ch.handle;
-  const playlists = discoverPlaylists(handle);
-  if (playlists.length === 0) {
-    console.log(`  ⚠ ${handle}: no playlists found`);
-    continue;
-  }
-  console.log(`  ${handle}: ${playlists.length} playlists`);
-  for (const pl of playlists) {
-    insertPlaylist.run(pl.id, pl.title, handle, handle);
-    totalPlaylists++;
-  }
-}
-
-// Check if courses exist and seed comments if available
-const courseCount = sqlite.prepare("SELECT COUNT(*) as c FROM courses").get() as { c: number };
-if (courseCount.c > 0) {
-  // Seed comments inline
-  const { ALL_COMMENTS } = await import("../lib/comments.js");
-  const courseRows = sqlite.prepare("SELECT youtube_id FROM courses").all() as { youtube_id: string }[];
-  const insertComment = sqlite.prepare(
-    "INSERT INTO comments (youtube_id, author, avatar_letter, text, likes, replies, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+  const insertPlaylist = sqlite.prepare(
+    "INSERT OR IGNORE INTO playlists (youtube_playlist_id, name, channel, channel_handle) VALUES (?, ?, ?, ?)"
   );
 
-  let commentCount = 0;
-  const insertMany = sqlite.transaction(() => {
-    for (const comment of ALL_COMMENTS) {
-      const course = courseRows[Math.floor(Math.random() * courseRows.length)];
-      insertComment.run(course.youtube_id, comment.author, comment.avatarLetter, comment.text, comment.likes, comment.replies, comment.createdAt);
-      commentCount++;
+  let totalPlaylists = 0;
+
+  for (const ch of channels) {
+    const handle = ch.handle;
+    const playlists = discoverPlaylists(handle);
+    if (playlists.length === 0) {
+      console.log(`  ⚠ ${handle}: no playlists found`);
+      continue;
     }
-  });
-  insertMany();
-  console.log(`  💬 Seeded ${commentCount} comments`);
+    console.log(`  ${handle}: ${playlists.length} playlists`);
+    for (const pl of playlists) {
+      insertPlaylist.run(pl.id, pl.title, handle, handle);
+      totalPlaylists++;
+    }
+  }
+
+  const courseCount = sqlite.prepare("SELECT COUNT(*) as c FROM courses").get() as { c: number };
+  if (courseCount.c > 0) {
+    const { ALL_COMMENTS } = await import("../lib/comments.js");
+    const courseRows = sqlite.prepare("SELECT youtube_id FROM courses").all() as { youtube_id: string }[];
+    const insertComment = sqlite.prepare(
+      "INSERT INTO comments (youtube_id, author, avatar_letter, text, likes, replies, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    );
+
+    let commentCount = 0;
+    const insertMany = sqlite.transaction(() => {
+      for (const comment of ALL_COMMENTS) {
+        const course = courseRows[Math.floor(Math.random() * courseRows.length)];
+        insertComment.run(course.youtube_id, comment.author, comment.avatarLetter, comment.text, comment.likes, comment.replies, comment.createdAt);
+        commentCount++;
+      }
+    });
+    insertMany();
+    console.log(`  💬 Seeded ${commentCount} comments`);
+  }
+
+  const finalCourseCount = (sqlite.prepare("SELECT COUNT(*) as c FROM courses").get() as { c: number }).c;
+  sqlite.close();
+
+  console.log(`\n${"=".repeat(60)}`);
+  console.log(`✅ Seeded ${channels.length} channels, ${totalPlaylists} playlists, ${finalCourseCount} courses`);
+  if (finalCourseCount === 0) {
+    console.log(`   💬 Run \`npm run sync\` first, then run this script again to seed comments`);
+  } else {
+    console.log(`   💬 Comments seeded`);
+  }
+  console.log(`   Then run \`npm run sync\` to fetch/update video metadata`);
+  console.log(`${"=".repeat(60)}\n`);
 }
 
-const finalCourseCount = (sqlite.prepare("SELECT COUNT(*) as c FROM courses").get() as { c: number }).c;
-sqlite.close();
-
-console.log(`\n${"=".repeat(60)}`);
-console.log(`✅ Seeded ${channels.length} channels, ${totalPlaylists} playlists, ${finalCourseCount} courses`);
-if (finalCourseCount === 0) {
-  console.log(`   💬 Run \`npm run sync\` first, then run this script again to seed comments`);
-} else {
-  console.log(`   💬 Comments seeded`);
-}
-console.log(`   Then run \`npm run sync\` to fetch/update video metadata`);
-console.log(`${"=".repeat(60)}\n`);
+main().catch((err) => {
+  console.error("Seed failed:", err);
+  process.exit(1);
+});

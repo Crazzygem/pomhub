@@ -30,33 +30,37 @@ if (courseCount === 0) {
   process.exit(1);
 }
 
-// Import generated comments
-const { ALL_COMMENTS } = await import("../src/lib/comments.js");
-const courseRows = sqlite.prepare("SELECT youtube_id FROM courses").all() as { youtube_id: string }[];
+async function main() {
+  const { ALL_COMMENTS } = await import("../src/lib/comments.js");
+  const courseRows = sqlite.prepare("SELECT youtube_id FROM courses").all() as { youtube_id: string }[];
 
-// Check existing comment count
-const existingCount = (sqlite.prepare("SELECT COUNT(*) as c FROM comments").get() as { c: number }).c;
-if (existingCount > 0) {
-  console.log(`⚠ ${existingCount} comments already exist. Emptying table...`);
-  sqlite.prepare("DELETE FROM comments").run();
+  const existingCount = (sqlite.prepare("SELECT COUNT(*) as c FROM comments").get() as { c: number }).c;
+  if (existingCount > 0) {
+    console.log(`⚠ ${existingCount} comments already exist. Emptying table...`);
+    sqlite.prepare("DELETE FROM comments").run();
+  }
+
+  const insertComment = sqlite.prepare(
+    "INSERT INTO comments (youtube_id, author, avatar_letter, text, likes, replies, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+  );
+
+  let count = 0;
+  const insertMany = sqlite.transaction(() => {
+    for (const comment of ALL_COMMENTS) {
+      const course = courseRows[Math.floor(Math.random() * courseRows.length)];
+      insertComment.run(course.youtube_id, comment.author, comment.avatarLetter, comment.text, comment.likes, comment.replies, comment.createdAt);
+      count++;
+    }
+  });
+
+  insertMany();
+  sqlite.close();
+
+  console.log(`✅ Seeded ${count} comments across ${courseCount} courses`);
+  console.log(`   (avg ${(count / courseCount).toFixed(1)} comments per course)`);
 }
 
-// Seed comments — randomly assign each to a course
-const insertComment = sqlite.prepare(
-  "INSERT INTO comments (youtube_id, author, avatar_letter, text, likes, replies, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-);
-
-let count = 0;
-const insertMany = sqlite.transaction(() => {
-  for (const comment of ALL_COMMENTS) {
-    const course = courseRows[Math.floor(Math.random() * courseRows.length)];
-    insertComment.run(course.youtube_id, comment.author, comment.avatarLetter, comment.text, comment.likes, comment.replies, comment.createdAt);
-    count++;
-  }
+main().catch((err) => {
+  console.error("Comment seed failed:", err);
+  process.exit(1);
 });
-
-insertMany();
-sqlite.close();
-
-console.log(`✅ Seeded ${count} comments across ${courseCount} courses`);
-console.log(`   (avg ${(count / courseCount).toFixed(1)} comments per course)`);
