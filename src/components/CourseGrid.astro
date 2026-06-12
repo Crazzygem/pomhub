@@ -14,9 +14,12 @@ export interface Props {
   }[];
   currentPage?: number;
   totalPages?: number;
+  category?: string;
+  sort?: string;
+  query?: string;
 }
 
-const { courses, currentPage = 1, totalPages = 1 } = Astro.props;
+const { courses, currentPage = 1, totalPages = 1, category, sort, query } = Astro.props;
 ---
 
 <section>
@@ -27,6 +30,6 @@ const { courses, currentPage = 1, totalPages = 1 } = Astro.props;
   </div>
 
   {totalPages > 1 && (
-    <Pagination {currentPage} {totalPages} />
+    <Pagination {currentPage} {totalPages} {category} {sort} {query} />
   )}
 </section>

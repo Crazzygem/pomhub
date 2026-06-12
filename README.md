@@ -5,7 +5,7 @@ A Pornhub-inspired coding bootcamp video platform. Aggregates free coding tutori
 ## Tech Stack
 
 - **Frontend**: Astro 5 + Tailwind CSS v4
-- **Database**: SQLite + Drizzle ORM
+- **Database**: SQLite (WAL mode) + Drizzle ORM
 - **Video Metadata**: yt-dlp Python API
 - **Deployment**: Docker + Node.js 22
 
@@ -28,8 +28,7 @@ A Pornhub-inspired coding bootcamp video platform. Aggregates free coding tutori
 # Install dependencies
 npm install
 
-# Set up database
-npm run db:push
+# Set up database (creates tables + seeds channels)
 npm run db:seed
 
 # Sync YouTube content
@@ -175,8 +174,7 @@ python3 scripts/sync.py
 |---------|-------------|
 | `npm run dev` | Start dev server |
 | `npm run build` | Production build |
-| `npm run db:push` | Push schema to database |
-| `npm run db:seed` | Seed channels + discover playlists |
+| `npm run db:seed` | Create tables + seed channels + discover playlists |
 | `python3 scripts/sync.py` | Sync YouTube metadata |
 | `docker compose up -d` | Run in Docker |
 

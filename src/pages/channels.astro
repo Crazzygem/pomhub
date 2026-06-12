@@ -1,0 +1,51 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { db } from "../db/client";
+import { courses, channels } from "../db/schema";
+import { eq } from "drizzle-orm";
+
+export const prerender = false;
+
+// Get all channels with course counts
+const allChannels = db.select().from(channels).all();
+const allCourses = db.select().from(courses).all();
+
+const channelCourseCounts = new Map<string, number>();
+for (const c of allCourses) {
+  const ch = c.channel || "Unknown";
+  channelCourseCounts.set(ch, (channelCourseCounts.get(ch) || 0) + 1);
+}
+---
+
+<Layout title="Channels | PomHub Dev">
+  <main class="max-w-[1280px] mx-auto px-5 py-6">
+    <h1 class="text-lg font-bold text-text-primary mb-1">Channels</h1>
+    <p class="text-xs text-text-muted mb-6">{allChannels.length} YouTube channels</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      {allChannels.map((ch) => {
+        const handle = ch.handle.replace("@", "");
+        const count = channelCourseCounts.get(handle) || 0;
+        return (
+          <div class="bg-bg-surface-1 rounded p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-accent-primary/20 flex items-center justify-center text-accent-primary font-bold text-sm flex-shrink-0">
+              {handle.charAt(0).toUpperCase()}
+            </div>
+            <div class="flex-1 min-w-0">
+              <h2 class="text-sm font-bold text-text-primary">{handle}</h2>
+              <p class="text-xs text-text-muted">
+                {ch.category || "General"} &middot; {count} {count === 1 ? "course" : "courses"}
+              </p>
+            </div>
+            <a
+              href={`/?category=${encodeURIComponent(ch.category || "General")}`}
+              class="text-xs text-accent-primary hover:underline flex-shrink-0"
+            >
+              Browse
+            </a>
+          </div>
+        );
+      })}
+    </div>
+  </main>
+</Layout>

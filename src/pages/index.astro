@@ -20,31 +20,58 @@ const allCourses = db.select().from(courses).all();
 // ── URL params ──────────────────────────────
 const activeCategory = Astro.url.searchParams.get("category") || undefined;
 const activeSort = Astro.url.searchParams.get("sort") || undefined;
+const activeQuery = Astro.url.searchParams.get("q") || undefined;
 const pageParam = Astro.url.searchParams.get("page");
 
 // ── Filter by category ──────────────────────
-const filteredCourses = activeCategory
+let filteredCourses = activeCategory
   ? allCourses.filter(c => c.category === activeCategory)
   : allCourses;
 
-// ── Fisher-Yates shuffle ────────────────────
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
+// ── Filter by search query ──────────────────
+if (activeQuery) {
+  const q = activeQuery.toLowerCase();
+  filteredCourses = filteredCourses.filter(c =>
+    c.title.toLowerCase().includes(q)
+  );
 }
 
-const shuffled = shuffle(filteredCourses);
-const totalPages = Math.ceil(shuffled.length / PAGE_SIZE) || 1;
+// ── Sort courses ────────────────────────────
+function sortCourses(courses: typeof filteredCourses, sort: string | undefined): typeof filteredCourses {
+  const sorted = [...courses];
+  switch (sort) {
+    case "most-viewed":
+      sorted.sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0));
+      break;
+    case "newest":
+      sorted.sort((a, b) => {
+        if (a.createdAt && b.createdAt) return b.createdAt.localeCompare(a.createdAt);
+        if (a.createdAt) return -1;
+        if (b.createdAt) return 1;
+        return 0;
+      });
+      break;
+    case "hot":
+    case "top-rated":
+    default:
+      // Fisher-Yates shuffle for "Hot" and "Top Rated" (no rating data available)
+      for (let i = sorted.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
+      }
+      break;
+  }
+  return sorted;
+}
+
+const sortedCourses = sortCourses(filteredCourses, activeSort);
+const totalPages = Math.ceil(sortedCourses.length / PAGE_SIZE) || 1;
 
 const currentPage = Math.max(1, Math.min(parseInt(pageParam || "1") || 1, totalPages));
 
 // Slice for current page
 const startIdx = (currentPage - 1) * PAGE_SIZE;
-const pageCourses = shuffled.slice(startIdx, startIdx + PAGE_SIZE);
+const pageCourses = sortedCourses.slice(startIdx, startIdx + PAGE_SIZE);
 
 // Pick a featured course
 const syncedCourses = allCourses.filter(c => c.source === "sync");
@@ -58,9 +85,11 @@ const categories = [...new Set(
 )];
 
 const videoCount = filteredCourses.length;
-const videoLabel = activeCategory
-  ? `${videoCount} videos in ${activeCategory}`
-  : `${videoCount} videos`;
+const videoLabel = activeQuery
+  ? `${videoCount} results for "${activeQuery}"`
+  : activeCategory
+    ? `${videoCount} videos in ${activeCategory}`
+    : `${videoCount} videos`;
 
 // Build active sort label for display
 const sortLabels: Record<string, string> = {
@@ -129,10 +158,17 @@ const activeSortLabel = activeSort && sortLabels[activeSort] ? sortLabels[active
           courses={pageCourses}
           currentPage={currentPage}
           totalPages={totalPages}
+          category={activeCategory}
+          sort={activeSort}
+          query={activeQuery}
         />
       ) : (
         <p class="text-sm text-text-muted py-8 text-center">
-          No courses found in this category.
+          {activeQuery
+            ? `No results for "${activeQuery}".`
+            : activeCategory
+              ? `No courses found in ${activeCategory}.`
+              : "No courses found."}
           <a href="/" class="text-accent-primary hover:underline ml-1">Show all courses</a>
         </p>
       )}

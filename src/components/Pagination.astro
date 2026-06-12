@@ -4,9 +4,23 @@ export interface Props {
   currentPage: number;
   totalPages: number;
   baseUrl?: string;
+  category?: string;
+  sort?: string;
+  query?: string;
 }
 
-const { currentPage, totalPages, baseUrl = "/" } = Astro.props;
+const { currentPage, totalPages, baseUrl = "/", category, sort, query } = Astro.props;
+
+// Build page URL preserving current filters
+function pageUrl(page: number): string {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  if (category) params.set("category", category);
+  if (sort) params.set("sort", sort);
+  if (query) params.set("q", query);
+  const qs = params.toString();
+  return qs ? `${baseUrl}?${qs}` : baseUrl;
+}
 
 // Build page number array with ellipsis
 function buildPages(current: number, total: number): (number | "...")[] {
@@ -32,7 +46,7 @@ const pages = buildPages(currentPage, totalPages);
 <div class="flex items-center justify-center gap-1 my-5">
   {currentPage > 1 ? (
     <a
-      href={`${baseUrl}?page=${currentPage - 1}`}
+      href={pageUrl(currentPage - 1)}
       class="text-xs text-text-secondary px-2 py-1 hover:text-accent-hover transition-colors duration-200"
     >
       Prev
@@ -46,7 +60,7 @@ const pages = buildPages(currentPage, totalPages);
       <span class="text-xs text-text-muted px-1">...</span>
     ) : (
       <a
-        href={`${baseUrl}?page=${page}`}
+        href={pageUrl(page as number)}
         class={`text-xs px-3 py-1 rounded-sm leading-tight transition-all duration-200 ${
           page === currentPage
             ? "text-accent-cta-text bg-accent-primary hover:scale-105 font-bold"
@@ -60,7 +74,7 @@ const pages = buildPages(currentPage, totalPages);
 
   {currentPage < totalPages ? (
     <a
-      href={`${baseUrl}?page=${currentPage + 1}`}
+      href={pageUrl(currentPage + 1)}
       class="text-xs text-text-secondary px-2 py-1 hover:text-accent-hover transition-colors duration-200"
     >
       Next

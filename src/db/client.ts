@@ -3,4 +3,9 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
 
 const sqlite = new Database(process.env.DB_PATH || './pomhub.db');
+
+// WAL mode prevents corruption on unclean shutdown and allows concurrent reads
+sqlite.pragma('journal_mode = WAL');
+sqlite.pragma('busy_timeout = 5000');
+
 export const db = drizzle(sqlite, { schema });

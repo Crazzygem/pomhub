@@ -8,44 +8,26 @@ set -e
 
 echo "🔄 PomHub Dev — Starting up..."
 
-# Step 1: Create tables + seed channels/playlists (only if tables don't exist)
+# Step 1: Create tables + seed channels/playlists (always runs, seed.ts is idempotent)
 if [ -f /app/src/db/seed.ts ]; then
-  echo "📦 Checking database..."
-  TABLE_EXISTS=$(node -e "
-    try {
-      const db = require('better-sqlite3')(process.env.DB_PATH || '/app/data/pomhub.db');
-      const row = db.prepare(\"SELECT name FROM sqlite_master WHERE type='table' AND name='courses'\").get();
-      process.exit(row ? 0 : 1);
-    } catch(e) { process.exit(1); }
-  " 2>/dev/null && echo "yes" || echo "no")
-
-  if [ "$TABLE_EXISTS" = "no" ]; then
-    echo "📦 Creating tables and seeding channels..."
-    cd /app && npx tsx src/db/seed.ts || echo "⚠ Seed had issues, but continuing..."
-  else
-    # Check if comments table exists (might be missing on existing DBs)
-    COMMENTS_EXISTS=$(node -e "
-      try {
-        const db = require('better-sqlite3')(process.env.DB_PATH || '/app/data/pomhub.db');
-        const row = db.prepare(\"SELECT name FROM sqlite_master WHERE type='table' AND name='comments'\").get();
-        process.exit(row ? 0 : 1);
-      } catch(e) { process.exit(1); }
-    " 2>/dev/null && echo "yes" || echo "no")
-
-    if [ "$COMMENTS_EXISTS" = "no" ]; then
-      echo "📦 Adding comments table and seeding comments..."
-      cd /app && npx tsx src/db/seed.ts || echo "⚠ Comment seed had issues, but continuing..."
-    else
-      echo "✅ Database already initialized"
-    fi
-  fi
+  echo "📦 Running database seed..."
+  cd /app && /app/node_modules/.bin/tsx src/db/seed.ts || echo "⚠ Seed had issues, but continuing..."
 fi
 
-# Step 2: Run incremental sync (fast if DB already populated)
+# Step 2: Run sync in background (doesn't block server startup)
 if [ -f /app/scripts/sync.py ]; then
-  echo "📡 Running sync..."
-  cd /app
-  python3 scripts/sync.py || echo "⚠ Sync failed, continuing anyway..."
+  echo "📡 Starting background sync..."
+  nohup python3 /app/scripts/sync.py >> /var/log/sync.log 2>&1 &
+  echo "   Sync PID: $!"
+
+  # Once sync finishes, seed comments automatically
+  # The wait/seed runs in a subprocess so it doesn't delay startup
+  (
+    # Wait for sync to finish
+    wait
+    echo "📝 Sync complete. Seeding comments..."
+    cd /app && /app/node_modules/.bin/tsx scripts/seed-comments.ts >> /var/log/sync.log 2>&1 || echo "⚠ Comment seed had issues"
+  ) &
 fi
 
 # Step 3: Start cron daemon in background

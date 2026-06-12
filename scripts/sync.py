@@ -91,6 +91,8 @@ def discover_playlists(handle: str) -> list[dict]:
         "no_warnings": True,
         "extract_flat": True,
         "playlistend": 30,
+        "socket_timeout": 15,
+        "retries": 2,
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -120,6 +122,8 @@ def get_playlist_video_ids(playlist_id: str, limit: int = 5) -> list[dict]:
         "no_warnings": True,
         "extract_flat": True,
         "playlistend": limit,
+        "socket_timeout": 15,
+        "retries": 2,
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -148,6 +152,8 @@ def get_video_metadata(video_id: str) -> dict | None:
         "quiet": True,
         "no_warnings": True,
         "skip_download": True,
+        "socket_timeout": 15,
+        "retries": 2,
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -163,7 +169,8 @@ def get_video_metadata(video_id: str) -> dict | None:
                 "view_count": info.get("view_count", 0) or 0,
                 "thumbnail_url": f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg",
             }
-    except Exception:
+    except Exception as e:
+        print(f"    ❌ Failed to fetch metadata for {video_id}: {e}")
         return None
 
 
@@ -278,6 +285,8 @@ def main():
         sys.exit(1)
 
     conn = sqlite3.connect(str(db_path))
+    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA busy_timeout = 5000")
     existing_ids = get_existing_video_ids(conn)
     print(f"📊 Database has {len(existing_ids)} existing videos")
 

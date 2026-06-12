@@ -15,6 +15,12 @@ const dbPath = process.env.DB_PATH || join(__dirname, "..", "..", "pomhub.db");
 const configPath = join(__dirname, "..", "..", "channels.json");
 
 const sqlite = new Database(dbPath);
+sqlite.pragma('journal_mode = WAL');
+sqlite.pragma('busy_timeout = 5000');
+
+// WAL mode prevents corruption on unclean shutdown
+sqlite.pragma('journal_mode = WAL');
+sqlite.pragma('busy_timeout = 5000');
 
 // Create tables
 sqlite.exec(`
