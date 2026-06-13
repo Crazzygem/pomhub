@@ -7,7 +7,7 @@ RUN apk add --no-cache build-base python3
 
 # Install dependencies
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci && npm prune --omit=dev
 
 # Copy source and build
 COPY . .

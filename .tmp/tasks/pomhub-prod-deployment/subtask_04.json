@@ -1,0 +1,34 @@
+{
+  "id": "pomhub-prod-deployment-04",
+  "seq": "04",
+  "title": "Optimize Dockerfile by Stripping devDependencies",
+  "status": "pending",
+  "depends_on": [],
+  "parallel": true,
+  "suggested_agent": "CoderAgent",
+  "agent_id": null,
+  "started_at": null,
+  "completed_at": null,
+  "context_files": [
+    ".opencode/context/core/standards/code-quality.md"
+  ],
+  "reference_files": [
+    "package.json",
+    "Dockerfile",
+    "entrypoint.sh",
+    "docker-compose.yml"
+  ],
+  "acceptance_criteria": [
+    "tsx is moved from devDependencies to dependencies in package.json (entrypoint uses tsx at runtime)",
+    "Dockerfile build stage runs `npm prune --omit=dev` after `npm ci` to strip devDeps from node_modules",
+    "Docker build succeeds with `docker compose build` (or `docker build .`)",
+    "Container starts and entrypoint.sh runs tsx seed scripts without error",
+    "Application loads and serves pages after container start",
+    "At minimum drizzle-kit (17MB) and @types/* packages are removed from final image"
+  ],
+  "deliverables": [
+    "package.json (modified - tsx moved to dependencies)",
+    "Dockerfile (modified - added npm prune --omit=dev)"
+  ],
+  "completion_summary": "Moved tsx to dependencies, added npm prune --omit=dev to Dockerfile"
+}

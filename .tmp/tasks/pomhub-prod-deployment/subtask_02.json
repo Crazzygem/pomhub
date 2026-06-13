@@ -1,0 +1,25 @@
+{
+  "id": "pomhub-prod-deployment-02",
+  "seq": "02",
+  "title": "Reset vm.max_map_count to Default 65530",
+  "status": "pending",
+  "depends_on": [],
+  "parallel": true,
+  "suggested_agent": "OpsEngineer",
+  "agent_id": null,
+  "started_at": null,
+  "completed_at": null,
+  "context_files": [
+    ".opencode/context/core/standards/security-patterns.md"
+  ],
+  "reference_files": [],
+  "acceptance_criteria": [
+    "sysctl vm.max_map_count returns 65530 immediately after sysctl -p",
+    "/etc/sysctl.d/99-pomhub.conf exists with line: vm.max_map_count = 65530",
+    "Setting is persistent across reboot (confirmed by applying sysctl --system)"
+  ],
+  "deliverables": [
+    "/etc/sysctl.d/99-pomhub.conf"
+  ],
+  "completion_summary": "Reset vm.max_map_count from 1048576 to default 65530 persistently"
+}

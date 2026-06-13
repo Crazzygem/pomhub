@@ -1,0 +1,30 @@
+{
+  "id": "pomhub-prod-deployment-05",
+  "seq": "05",
+  "title": "Configure nginx as Reverse Proxy for Docker Container",
+  "status": "pending",
+  "depends_on": ["01"],
+  "parallel": false,
+  "suggested_agent": "OpsEngineer",
+  "agent_id": null,
+  "started_at": null,
+  "completed_at": null,
+  "context_files": [
+    ".opencode/context/core/standards/security-patterns.md"
+  ],
+  "reference_files": [
+    "docker-compose.yml"
+  ],
+  "acceptance_criteria": [
+    "/etc/nginx/sites-available/pomhub created with proxy_pass http://127.0.0.1:4321",
+    "Site is symlinked in /etc/nginx/sites-enabled/",
+    "nginx -t (config test) passes without errors",
+    "nginx is reloaded (systemctl reload nginx or nginx -s reload)",
+    "curl http://localhost:80 returns PomHub application (not nginx welcome page)",
+    "systemctl is-enabled nginx confirms nginx is enabled for boot persistence"
+  ],
+  "deliverables": [
+    "/etc/nginx/sites-available/pomhub (new file on VPS)"
+  ],
+  "completion_summary": "Configured nginx reverse proxy on port 80 -> Docker port 4321"
+}

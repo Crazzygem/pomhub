@@ -6,7 +6,7 @@
 
 set -e
 
-echo "🔄 PomHub Dev — Starting up..."
+echo "🔄 PomHub — Starting up..."
 
 # Step 1: Create tables + seed channels/playlists (always runs, seed.ts is idempotent)
 if [ -f /app/src/db/seed.ts ]; then
@@ -37,5 +37,5 @@ if [ -f /var/spool/cron/crontabs/root ]; then
 fi
 
 # Step 4: Start Node.js server
-echo "🚀 Starting PomHub Dev server..."
+echo "🚀 Starting PomHub production server..."
 exec node dist/server/entry.mjs

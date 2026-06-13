@@ -1,0 +1,28 @@
+{
+  "id": "pomhub-prod-deployment-01",
+  "seq": "01",
+  "title": "Kill Host Node Process Running Outside Docker",
+  "status": "pending",
+  "depends_on": [],
+  "parallel": true,
+  "suggested_agent": "OpsEngineer",
+  "agent_id": null,
+  "started_at": null,
+  "completed_at": null,
+  "context_files": [
+    ".opencode/context/core/standards/security-patterns.md"
+  ],
+  "reference_files": [
+    "docker-compose.yml"
+  ],
+  "acceptance_criteria": [
+    "Host Node.js process PID 86471 is killed and not respawning",
+    "Docker container is the only running instance (confirmed via docker ps)",
+    "Only one Node.js process is listening on port 4321",
+    "Application is still accessible at http://localhost:4321 after kill"
+  ],
+  "deliverables": [
+    "VPS: killed duplicate Node.js host process PID 86471"
+  ],
+  "completion_summary": "Killed host Node process PID 86471 out of Docker"
+}
