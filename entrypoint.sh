@@ -33,7 +33,7 @@ fi
 # Step 3: Start cron daemon in background
 if [ -f /var/spool/cron/crontabs/root ]; then
   echo "⏰ Starting cron daemon..."
-  crond -f -l 2 &
+  cron -f &
 fi
 
 # Step 4: Start Node.js server
