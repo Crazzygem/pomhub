@@ -25,3 +25,5 @@ Thumbs.db
 # Environment
 .env
 .env.*
+pomhub.db-shm
+pomhub.db-wal
