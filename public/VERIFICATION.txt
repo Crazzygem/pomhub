@@ -1,0 +1,8 @@
+To verify pomhub.site with Google Search Console:
+
+1. Go to https://search.google.com/search-console
+2. Add property → URL prefix → https://pomhub.site
+3. Choose "HTML file upload" verification method
+4. Download the HTML file
+5. Place it in this public/ directory
+6. Deploy (npm run build && bash deploy.sh)

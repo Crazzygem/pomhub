@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /api/sync
+
+Sitemap: https://pomhub.site/sitemap.xml
+
+Host: pomhub.site

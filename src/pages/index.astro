@@ -102,6 +102,32 @@ const activeSortLabel = activeSort && sortLabels[activeSort] ? sortLabels[active
 ---
 
 <Layout ogImage="https://pomhub.site/og-image.png">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "PomHub Dev",
+      "url": "https://pomhub.site",
+      "description": "Free coding courses, tutorials, and bootcamps. Learn networking, Python, Linux, Docker, and more from top creators.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://pomhub.site/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "PomHub Dev",
+      "url": "https://pomhub.site",
+      "logo": "https://pomhub.site/favicon.svg"
+    }
+  </script>
   <main class="max-w-[1280px] mx-auto px-5">
 
     {/* ── Compact Featured Hero ────────────────── */}

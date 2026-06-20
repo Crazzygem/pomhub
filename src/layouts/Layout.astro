@@ -8,12 +8,14 @@ export interface Props {
   title?: string;
   description?: string;
   ogImage?: string;
+  ogType?: string;
 }
 
 const {
   title = "PomHub Dev — Coding Bootcamp",
   description = "Free coding courses, tutorials, and bootcamps. Learn networking, Python, Linux, Docker, and more from top creators.",
   ogImage,
+  ogType = "website",
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site || "http://localhost:4321");
@@ -28,9 +30,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || "http://localhost
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
     <link rel="canonical" href={canonicalURL} />
+    <link rel="alternate" hreflang="en" href={canonicalURL} />
+    <link rel="alternate" hreflang="x-default" href={canonicalURL} />
+
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#000000" />
 
     <!-- Open Graph -->
-    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content="PomHub Dev" />

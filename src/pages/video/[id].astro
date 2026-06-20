@@ -66,17 +66,80 @@ const courseComments = db.select()
 
 // View count display
 const viewCount = course.viewCount ?? 0;
-const description = `Learn ${course.title} with this comprehensive course by ${course.channel}. Master the fundamentals and best practices through hands-on exercises and real-world projects.`;
+
+// Better meta description with real data
+const description = `Watch ${course.title} by ${course.channel}. ${course.duration} tutorial with ${viewCount.toLocaleString()} views. Free ${course.category || 'coding'} course on PomHub Dev.`;
 
 // OG image
 const ogImage = course.thumbnailUrl || `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+
+// Convert "MM:SS" or "HH:MM:SS" duration to ISO 8601 (PT##M##S)
+function toIsoDuration(dur: string): string | null {
+  const parts = dur.split(":").map(Number);
+  if (parts.length === 2) {
+    const [m, s] = parts;
+    if (isNaN(m) || isNaN(s)) return null;
+    return `PT${m}M${s}S`;
+  }
+  if (parts.length === 3) {
+    const [h, m, s] = parts;
+    if (isNaN(h) || isNaN(m) || isNaN(s)) return null;
+    return `PT${h}H${m}M${s}S`;
+  }
+  return null;
+}
+const isoDuration = toIsoDuration(course.duration ?? "");
+
+// URL-encode the category for breadcrumb linking
+const encodedCategory = course.category ? encodeURIComponent(course.category) : null;
+
+// Build description for structured data (plain text, no markdown)
+const structuredDescription = `${course.title} — a free ${course.duration} coding tutorial by ${course.channel}. ${viewCount.toLocaleString()} views on PomHub Dev.`;
 ---
 
 <Layout
   title={`${course.title} | PomHub Dev`}
   description={description}
   ogImage={ogImage}
+  ogType="video.other"
 >
+  <!-- OG video tags (Astro hoists meta tags into <head>) -->
+  <meta property="og:video" content={`https://www.youtube.com/embed/${id}`} />
+  <meta property="og:video:width" content="1280" />
+  <meta property="og:video:height" content="720" />
+
+  <!-- VideoObject Structured Data (JSON-LD) -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    "name": course.title,
+    "description": structuredDescription,
+    "thumbnailUrl": course.thumbnailUrl || `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
+    "uploadDate": course.createdAt ?? undefined,
+    ...(isoDuration && { duration: isoDuration }),
+    "embedUrl": `https://www.youtube.com/embed/${id}`,
+    "interactionStatistic": [
+      {
+        "@type": "InteractionCounter",
+        "interactionType": { "@type": "WatchAction" },
+        "userInteractionCount": viewCount,
+      },
+    ],
+  })} />
+
+  <!-- BreadcrumbList Structured Data (JSON-LD) -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://pomhub.site/" },
+      ...(course.category
+        ? [{ "@type": "ListItem", "position": 2, "name": course.category, "item": `https://pomhub.site/?category=${encodedCategory}` }]
+        : []),
+      { "@type": "ListItem", "position": course.category ? 3 : 2, "name": course.title },
+    ],
+  })} />
+
   <main class="max-w-[1280px] mx-auto px-5 py-4">
 
     <!-- Breadcrumb -->
